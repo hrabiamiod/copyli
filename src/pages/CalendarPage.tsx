@@ -5,15 +5,11 @@ import SEOHead from "../components/SEOHead";
 import { CATEGORY_LABELS } from "../utils/pollen";
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
-const MONTH_COLORS: Record<string, string> = {
-  tree: "#81C784",
-  grass: "#FFD54F",
-  weed: "#FF8A65",
-};
-const PEAK_COLORS: Record<string, string> = {
-  tree: "#2E7D32",
-  grass: "#F57F17",
-  weed: "#BF360C",
+
+const CAT_COLORS: Record<string, { base: string; peak: string }> = {
+  tree:  { base: "#52B78855", peak: "#1B4332" },
+  grass: { base: "#F4A26155", peak: "#C9903A" },
+  weed:  { base: "#E76F5155", peak: "#C1121F" },
 };
 
 export default function CalendarPage() {
@@ -23,8 +19,7 @@ export default function CalendarPage() {
     fetch("/data/plants.json").then(r => r.json()).then(setPlants);
   }, []);
 
-  const currentMonth = new Date().getMonth(); // 0-indexed
-
+  const currentMonth = new Date().getMonth();
   const categories = ["tree", "grass", "weed"] as const;
 
   return (
@@ -35,35 +30,45 @@ export default function CalendarPage() {
         canonical="https://copyli.pl/kalendarz-pylenia"
       />
 
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <nav className="text-xs text-gray-500 flex items-center gap-1.5 mb-4">
-          <Link to="/" className="hover:text-green-700">Strona główna</Link>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px 48px" }}>
+
+        <nav style={{ fontSize: 12, color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
+          <Link to="/" style={{ color: "var(--ink-3)", textDecoration: "none" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--forest)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--ink-3)")}
+          >Strona główna</Link>
           <span>›</span>
-          <span className="text-gray-700 font-medium">Kalendarz pylenia</span>
+          <span style={{ color: "var(--ink)", fontWeight: 500 }}>Kalendarz pylenia</span>
         </nav>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "var(--forest)", letterSpacing: "-0.5px", marginBottom: 8 }}>
           Kalendarz pylenia roślin w Polsce
         </h1>
-        <p className="text-sm text-gray-600 mb-6">
+        <p style={{ fontSize: 15, color: "var(--ink-2)", marginBottom: 28, maxWidth: 600 }}>
           Przegląd sezonów pyłkowych dla najważniejszych roślin uczulających w Polsce.
-          Kolory intensywne = szczyt pylenia.
+          Intensywny kolor = szczyt pylenia.
         </p>
 
-        {/* Heatmapa */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+        <div style={{
+          background: "var(--surface)",
+          borderRadius: "var(--r-lg)",
+          boxShadow: "var(--s-card)",
+          border: "1px solid var(--cream-dark)",
+          overflowX: "auto",
+        }}>
           {/* Nagłówek miesięcy */}
-          <div className="flex border-b border-gray-100">
-            <div className="w-32 shrink-0 p-3 text-xs text-gray-500 font-medium">Roślina</div>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--cream-dark)" }}>
+            <div style={{ width: 140, flexShrink: 0, padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Roślina
+            </div>
             {MONTHS.map((m, i) => (
-              <div
-                key={m}
-                className={`flex-1 p-2 text-center text-xs font-semibold min-w-[36px] ${
-                  i === currentMonth ? "bg-blue-50 text-blue-700" : "text-gray-500"
-                }`}
-              >
+              <div key={m} style={{
+                flex: 1, padding: "10px 4px", textAlign: "center", fontSize: 11, fontWeight: 600, minWidth: 36,
+                color: i === currentMonth ? "var(--forest)" : "var(--ink-3)",
+                background: i === currentMonth ? "var(--gold-soft)" : "transparent",
+              }}>
                 {m}
-                {i === currentMonth && <div className="w-1 h-1 bg-blue-500 rounded-full mx-auto mt-0.5" />}
+                {i === currentMonth && <div style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--gold)", margin: "3px auto 0" }} />}
               </div>
             ))}
           </div>
@@ -71,27 +76,31 @@ export default function CalendarPage() {
           {categories.map(cat => {
             const catPlants = plants.filter(p => p.category === cat);
             if (catPlants.length === 0) return null;
+            const { base, peak } = CAT_COLORS[cat];
             return (
               <div key={cat}>
-                <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                <div style={{ padding: "8px 16px", background: "var(--surface-tint)", borderBottom: "1px solid var(--cream-dark)", borderTop: "1px solid var(--cream-dark)" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink-2)" }}>
                     {CATEGORY_LABELS[cat]}
                   </span>
                 </div>
-                {catPlants.map(plant => {
-                  const peakMonths: number[] = plant.peak_months
-                    ? JSON.parse(plant.peak_months)
-                    : [];
 
+                {catPlants.map((plant, idx) => {
+                  const peakMonths: number[] = plant.peak_months ? JSON.parse(plant.peak_months) : [];
                   return (
-                    <div key={plant.slug} className="flex border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <div className="w-32 shrink-0 p-3 flex items-center gap-1.5">
-                        <span className="text-base">{plant.icon}</span>
+                    <div key={plant.slug}
+                      style={{ display: "flex", borderBottom: idx < catPlants.length - 1 ? "1px solid var(--cream-dark)" : "none", transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "var(--surface-tint)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <div style={{ width: 140, flexShrink: 0, padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 18, lineHeight: 1 }}>{plant.icon}</span>
                         <div>
-                          <p className="text-xs font-semibold text-gray-800 leading-tight">{plant.name_pl}</p>
-                          <p className="text-xs text-gray-400 italic leading-tight">{plant.name_latin}</p>
+                          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3, margin: 0 }}>{plant.name_pl}</p>
+                          <p style={{ fontSize: 10, color: "var(--ink-3)", fontStyle: "italic", lineHeight: 1.3, margin: 0 }}>{plant.name_latin}</p>
                         </div>
                       </div>
+
                       {MONTHS.map((_, monthIdx) => {
                         const month = monthIdx + 1;
                         const inRange = plant.month_start <= plant.month_end
@@ -99,21 +108,14 @@ export default function CalendarPage() {
                           : month >= plant.month_start || month <= plant.month_end;
                         const isPeak = peakMonths.includes(month);
                         const isCurrent = monthIdx === currentMonth;
-
                         return (
-                          <div
-                            key={monthIdx}
-                            className={`flex-1 min-w-[36px] p-1 flex items-center justify-center ${isCurrent ? "ring-1 ring-inset ring-blue-200" : ""}`}
-                          >
+                          <div key={monthIdx} style={{
+                            flex: 1, minWidth: 36, padding: "6px 2px", display: "flex", alignItems: "center", justifyContent: "center",
+                            background: isCurrent ? "var(--gold-soft)" : "transparent",
+                          }}>
                             {inRange && (
-                              <div
-                                className="w-full h-6 rounded"
-                                style={{
-                                  backgroundColor: isPeak ? PEAK_COLORS[cat] : MONTH_COLORS[cat],
-                                  opacity: isPeak ? 1 : 0.5,
-                                }}
-                                title={`${plant.name_pl} — ${isPeak ? "szczyt" : "pylenie"}`}
-                              />
+                              <div style={{ width: "100%", height: 22, borderRadius: 5, background: isPeak ? peak : base }}
+                                title={`${plant.name_pl} — ${isPeak ? "szczyt pylenia" : "pylenie"}`} />
                             )}
                           </div>
                         );
@@ -127,42 +129,43 @@ export default function CalendarPage() {
         </div>
 
         {/* Legenda */}
-        <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-4 rounded bg-green-600" />
-            <span>Drzewa (szczyt)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-4 rounded bg-yellow-600" />
-            <span>Trawy (szczyt)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-4 rounded bg-orange-700" />
-            <span>Chwasty (szczyt)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-4 rounded bg-blue-200" />
+        <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 16, fontSize: 12, color: "var(--ink-2)" }}>
+          {[
+            { label: "Drzewa — szczyt",  color: CAT_COLORS.tree.peak },
+            { label: "Trawy — szczyt",   color: CAT_COLORS.grass.peak },
+            { label: "Chwasty — szczyt", color: CAT_COLORS.weed.peak },
+          ].map(({ label, color }) => (
+            <div key={label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ width: 28, height: 12, borderRadius: 4, background: color, flexShrink: 0 }} />
+              <span>{label}</span>
+            </div>
+          ))}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 28, height: 12, borderRadius: 4, background: "var(--gold-soft)", border: "1px solid var(--gold)", flexShrink: 0 }} />
             <span>Bieżący miesiąc</span>
           </div>
         </div>
 
-        {/* Opis */}
-        <section className="mt-8 prose prose-sm max-w-none text-gray-600">
-          <h2 className="text-lg font-bold text-gray-800">Kiedy najgorzej dla alergika?</h2>
-          <p>
-            W Polsce sezon pyłkowy zaczyna się już w <strong>lutym</strong>, gdy pylić zaczynają leszczyna i olcha —
-            szczególnie w cieplejsze zimy. Najintensywniejszy okres to <strong>kwiecień–maj</strong> (brzoza, dąb, jesion)
-            oraz <strong>czerwiec–lipiec</strong> (trawy — najczęstsza przyczyna alergii w Polsce).
+        <section style={{ marginTop: 40, borderTop: "1px solid var(--cream-dark)", paddingTop: 32 }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "var(--forest)", marginBottom: 12 }}>
+            Kiedy najgorzej dla alergika?
+          </h2>
+          <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.75, marginBottom: 12 }}>
+            W Polsce sezon pyłkowy zaczyna się już w <strong style={{ color: "var(--ink)" }}>lutym</strong>, gdy pylić zaczynają leszczyna i olcha —
+            szczególnie w cieplejsze zimy. Najintensywniejszy okres to <strong style={{ color: "var(--ink)" }}>kwiecień–maj</strong> (brzoza, dąb, jesion)
+            oraz <strong style={{ color: "var(--ink)" }}>czerwiec–lipiec</strong> (trawy — najczęstsza przyczyna alergii w Polsce).
           </p>
-          <p>
-            Alergicy uczuleni na ambrozję cierpią <strong>sierpień–wrzesień</strong>. Ambrozja to roślina inwazyjna,
+          <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.75, marginBottom: 12 }}>
+            Alergicy uczuleni na ambrozję cierpią <strong style={{ color: "var(--ink)" }}>sierpień–wrzesień</strong>. Ambrozja to roślina inwazyjna,
             bardzo silnie alergizująca, której obszar w Polsce wciąż się powiększa.
           </p>
-          <p>
-            Sprawdź aktualne stężenia pyłków w <Link to="/" className="text-green-700 underline">interaktywnej mapie</Link> lub
-            wybierz swoje miasto poniżej.
+          <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.75 }}>
+            Sprawdź aktualne stężenia pyłków w{" "}
+            <Link to="/" style={{ color: "var(--forest)", fontWeight: 600, textDecoration: "underline" }}>interaktywnej mapie</Link>{" "}
+            lub wybierz swoje miasto.
           </p>
         </section>
+
       </div>
     </>
   );
