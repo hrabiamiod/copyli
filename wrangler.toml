@@ -1,0 +1,16 @@
+name = "copyli"
+compatibility_date = "2024-01-01"
+
+pages_build_output_dir = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "copyli-db"
+database_id = "973341c4-e03d-4128-b819-230ea045b4ed"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Opcjonalne klucze API (sekret przez: wrangler secret put AMBEE_API_KEY)
+# AMBEE_API_KEY = ""
+# GOOGLE_POLLEN_API_KEY = ""

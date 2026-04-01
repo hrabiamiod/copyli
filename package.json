@@ -1,0 +1,49 @@
+{
+  "name": "copyli",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build && npx tsx scripts/prerender.ts",
+    "prerender": "npx tsx scripts/prerender.ts",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "seed:cities": "npx tsx scripts/seed-cities.ts",
+    "seed:db": "wrangler d1 execute copyli-db --file=db/schema.sql && wrangler d1 execute copyli-db --file=db/seed-plants.sql && wrangler d1 execute copyli-db --file=db/seed-cities.sql",
+    "data:fetch": "npx tsx scripts/fetch-pollen.ts",
+    "data:walk": "npx tsx scripts/calc-walk-index.ts",
+    "data:static": "npx tsx scripts/generate-static.ts",
+    "data:sitemap": "npx tsx scripts/generate-sitemap.ts",
+    "data:all": "npm run data:fetch && npm run data:walk && npm run data:static && npm run data:sitemap",
+    "deploy": "npm run data:all && npm run build && wrangler pages deploy dist --project-name=copyli"
+  },
+  "dependencies": {
+    "@types/leaflet": "^1.9.21",
+    "leaflet": "^1.9.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.13.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.57.0",
+    "vite": "^8.0.1"
+  }
+}

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#15803d" />
+    <title>CoPyli.pl — Interaktywna mapa pyłkowa Polski</title>
+    <meta name="description" content="Aktualne stężenie pyłków w Polsce. Interaktywna mapa pylenia dla alergików — prognoza 5-dniowa, Indeks Spacerowy, 954 polskie miasta." />
+    <!-- Open Graph -->
+    <meta property="og:title" content="CoPyli.pl — Interaktywna mapa pyłkowa Polski" />
+    <meta property="og:description" content="Aktualne stężenie pyłków w Polsce dla alergików. Dane aktualizowane co 2 godziny." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://copyli.pl" />
+    <meta property="og:locale" content="pl_PL" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="CoPyli.pl — mapa pyłkowa Polski" />
+    <!-- Syne + DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
+    <!-- Preload Leaflet CSS -->
+    <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" as="image" />
+    <!-- Vanilla CookieConsent v3 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Google Analytics — załadowane dopiero po zgodzie -->
+    <script>
+      function loadGA() {
+        if (window._gaLoaded) return;
+        window._gaLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-0R2ZH1EK8M';
+        document.head.appendChild(s);
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ window.dataLayer.push(arguments); }
+        window.gtag = gtag;
+        gtag('js', new Date());
+        gtag('config', 'G-0R2ZH1EK8M', { anonymize_ip: true });
+      }
+    </script>
+
+    <!-- Vanilla CookieConsent v3 -->
+    <script src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.umd.js"></script>
+    <script>
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: 'box',
+            position: 'bottom left',
+            equalWeightButtons: false,
+          },
+          preferencesModal: {
+            layout: 'box',
+          }
+        },
+
+        categories: {
+          necessary: {
+            enabled: true,
+            readOnly: true,
+          },
+          analytics: {
+            enabled: false,
+            autoClear: {
+              cookies: [
+                { name: /^_ga/ },
+                { name: '_gid' },
+                { name: '_gat' },
+              ]
+            }
+          }
+        },
+
+        onConsent: function() {
+          if (CookieConsent.acceptedCategory('analytics')) {
+            loadGA();
+          }
+        },
+
+        onChange: function({ changedCategories }) {
+          if (changedCategories.includes('analytics')) {
+            if (CookieConsent.acceptedCategory('analytics')) {
+              loadGA();
+            }
+          }
+        },
+
+        language: {
+          default: 'pl',
+          translations: {
+            pl: {
+              consentModal: {
+                title: '🌿 Używamy ciasteczek',
+                description: 'Chcemy lepiej rozumieć, jak korzystasz z CoPyli.pl, aby stale ulepszać serwis. Dane analityczne pomagają nam dbać o jakość i rozwijać nowe funkcje. Możesz zaakceptować wszystkie lub wybrać tylko niezbędne.',
+                acceptAllBtn: 'Akceptuj wszystkie',
+                acceptNecessaryBtn: 'Tylko niezbędne',
+                showPreferencesBtn: 'Zarządzaj',
+                footer: '<a href="/polityka-prywatnosci">Polityka prywatności</a>'
+              },
+              preferencesModal: {
+                title: 'Preferencje plików cookie',
+                acceptAllBtn: 'Akceptuj wszystkie',
+                acceptNecessaryBtn: 'Tylko niezbędne',
+                savePreferencesBtn: 'Zapisz preferencje',
+                closeIconLabel: 'Zamknij',
+                sections: [
+                  {
+                    title: 'Pliki cookie',
+                    description: 'Korzystamy z plików cookie, aby zapewnić podstawowe funkcje serwisu oraz — za Twoją zgodą — zbierać anonimowe dane analityczne pomagające rozwijać CoPyli.pl.'
+                  },
+                  {
+                    title: 'Niezbędne',
+                    description: 'Te pliki cookie są wymagane do prawidłowego działania serwisu i nie mogą być wyłączone.',
+                    linkedCategory: 'necessary',
+                  },
+                  {
+                    title: 'Analityczne (Google Analytics)',
+                    description: 'Pomagają nam zrozumieć, jak użytkownicy korzystają z serwisu (np. które strony są najczęściej odwiedzane). Dane są anonimizowane i nie są sprzedawane.',
+                    linkedCategory: 'analytics',
+                  }
+                ]
+              }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

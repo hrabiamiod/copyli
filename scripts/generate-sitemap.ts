@@ -1,0 +1,43 @@
+/**
+ * Generuje sitemap.xml na podstawie statycznych plików JSON z public/data/.
+ * Musi być uruchomiony po generate-static.ts.
+ */
+
+import { writeFileSync, readFileSync } from "fs";
+import { join } from "path";
+
+const BASE_URL = "https://copyli.pl";
+const TODAY = new Date().toISOString().substring(0, 10);
+const DATA_DIR = join(process.cwd(), "public", "data");
+
+function url(loc: string, priority: string, changefreq: string): string {
+  return `  <url>
+    <loc>${BASE_URL}${loc}</loc>
+    <lastmod>${TODAY}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+}
+
+async function main() {
+  const cities = JSON.parse(readFileSync(join(DATA_DIR, "cities.json"), "utf-8")) as Array<{ slug: string }>;
+  const voivodeships = JSON.parse(readFileSync(join(DATA_DIR, "voivodeships.json"), "utf-8")) as Array<{ slug: string }>;
+
+  const cityUrls = cities.map(c => url(`/pylek/${c.slug}`, "0.8", "hourly")).join("\n");
+  const voivUrls = voivodeships.map(v => url(`/pylek/woj/${v.slug}`, "0.7", "hourly")).join("\n");
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${url("/", "1.0", "hourly")}
+${url("/kalendarz-pylenia", "0.6", "monthly")}
+${voivUrls}
+${cityUrls}
+</urlset>`;
+
+  const outPath = join(process.cwd(), "public", "sitemap.xml");
+  writeFileSync(outPath, sitemap, "utf-8");
+  console.log(`Sitemap wygenerowany: ${outPath}`);
+  console.log(`Łącznie URL: ${2 + cities.length + voivodeships.length}`);
+}
+
+main().catch(console.error);
