@@ -22,6 +22,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet" />
     <!-- Preload Leaflet CSS -->
     <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" as="image" />
+    <!-- Ahrefs Analytics — type="text/plain" blokuje wykonanie do momentu zgody -->
+    <script type="text/plain" data-category="analytics" src="https://analytics.ahrefs.com/analytics.js" data-key="996q+i0KZQAJUPqgO5ppWA" async></script>
     <!-- Vanilla CookieConsent v3 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.0.1/dist/cookieconsent.css" />
   </head>
@@ -45,19 +47,9 @@
         gtag('config', 'G-0R2ZH1EK8M', { anonymize_ip: true });
       }
 
-      function loadAhrefs() {
-        if (window._ahrefsLoaded) return;
-        window._ahrefsLoaded = true;
-        var s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://analytics.ahrefs.com/analytics.js';
-        s.dataset.key = '996q+i0KZQAJUPqgO5ppWA';
-        document.head.appendChild(s);
-      }
-
       function loadAnalytics() {
         loadGA();
-        loadAhrefs();
+        // Ahrefs aktywowany automatycznie przez CookieConsent (data-category="analytics")
       }
     </script>
 
