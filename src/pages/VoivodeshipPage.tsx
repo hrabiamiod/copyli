@@ -1,27 +1,61 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { City, MapData } from "../types";
+import type { PollenLevel } from "../types";
 import SEOHead from "../components/SEOHead";
 import PollenBadge from "../components/PollenBadge";
-import { getVoivodeshipLevel } from "../utils/pollen";
+import { getVoivodeshipLevel, CATEGORY_LABELS, CATEGORY_ICONS, LEVEL_LABELS, LEVEL_COLORS } from "../utils/pollen";
 import { getVoivodeshipPageTitle, getVoivodeshipPageDescription } from "../utils/seo";
+
+const LEVEL_ORDER: PollenLevel[] = ["none", "low", "medium", "high", "very_high"];
+const LEVEL_BAR_W: Record<PollenLevel, string> = {
+  none: "0%", low: "20%", medium: "45%", high: "70%", very_high: "100%",
+};
+
+interface Voivodeship {
+  id: number;
+  slug: string;
+  name: string;
+}
 
 export default function VoivodeshipPage() {
   const { wojewodztwo } = useParams<{ wojewodztwo: string }>();
   const [cities, setCities] = useState<City[]>([]);
   const [mapData, setMapData] = useState<MapData[]>([]);
+  const [voivodeships, setVoivodeships] = useState<Voivodeship[]>([]);
+  const [cityLevels, setCityLevels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetch("/data/cities.json").then(r => r.json()),
       fetch("/data/map-data.json").then(r => r.json()),
-    ]).then(([c, m]) => { setCities(c); setMapData(m); setLoading(false); });
+      fetch("/data/voivodeships.json").then(r => r.json()).catch(() => []),
+      fetch("/data/city-levels.json").then(r => r.json()).catch(() => ({})),
+    ]).then(([c, m, v, cl]) => {
+      setCities(c); setMapData(m); setVoivodeships(v); setCityLevels(cl);
+      setLoading(false);
+    });
   }, []);
 
   const voivCities = cities.filter(c => c.voivodeship_slug === wojewodztwo).sort((a,b) => b.population - a.population);
   const voivName = voivCities[0]?.voivodeship_name ?? "";
   const level = getVoivodeshipLevel(mapData, wojewodztwo ?? "");
+
+  // Plant data for this voivodeship
+  const voivPlants = mapData
+    .filter(d => d.voivodeship_slug === wojewodztwo)
+    .sort((a, b) => LEVEL_ORDER.indexOf(b.max_level) - LEVEL_ORDER.indexOf(a.max_level));
+
+  // Group by category
+  const plantsByCategory: Record<string, MapData[]> = {};
+  for (const p of voivPlants) {
+    if (!plantsByCategory[p.category]) plantsByCategory[p.category] = [];
+    plantsByCategory[p.category].push(p);
+  }
+
+  // Dominant plant (highest level, highest concentration)
+  const dominantPlant = voivPlants.find(p => p.max_level !== "none") ?? voivPlants[0];
 
   if (loading) return (
     <div style={{ display:"flex", alignItems:"center", justifyContent:"center", minHeight:"40vh" }}>
@@ -45,6 +79,7 @@ export default function VoivodeshipPage() {
           <span style={{ color:"var(--ink)", fontWeight:500 }}>{voivName}</span>
         </nav>
 
+        {/* Header */}
         <div className="anim-fade-up" style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16 }}>
           <div>
             <h1 style={{
@@ -63,32 +98,140 @@ export default function VoivodeshipPage() {
           </div>
         </div>
 
-        <div className="anim-fade-up delay-1">
+        {/* Dominant plant callout */}
+        {dominantPlant && dominantPlant.max_level !== "none" && (
+          <div
+            className="anim-fade-up delay-1"
+            style={{
+              background:"rgba(27,67,50,0.07)",
+              border:"1px solid rgba(27,67,50,0.15)",
+              borderRadius:"var(--r-md)",
+              padding:"14px 18px",
+              display:"flex",
+              alignItems:"center",
+              gap:14,
+            }}
+          >
+            <div style={{
+              width:40, height:40, borderRadius:"50%",
+              background:"rgba(27,67,50,0.12)",
+              display:"flex", alignItems:"center", justifyContent:"center",
+              fontSize:20, flexShrink:0,
+            }}>
+              {CATEGORY_ICONS[dominantPlant.category] ?? "🌱"}
+            </div>
+            <div>
+              <p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"var(--forest)" }}>
+                Dominujący alergen: {dominantPlant.plant_name}
+              </p>
+              <p style={{ margin:0, fontSize:12, color:"var(--forest)", opacity:0.75 }}>
+                Stężenie: <strong>{LEVEL_LABELS[dominantPlant.max_level]}</strong> ·{" "}
+                {CATEGORY_LABELS[dominantPlant.category]}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Plant breakdown by category */}
+        {Object.keys(plantsByCategory).length > 0 && (
+          <div className="anim-fade-up delay-1">
+            <p className="label" style={{ marginBottom:12 }}>Stężenia pyłków według roślin</p>
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              {(["tree","grass","weed"] as const).map(cat => {
+                const plants = plantsByCategory[cat];
+                if (!plants?.length) return null;
+                return (
+                  <div
+                    key={cat}
+                    style={{
+                      background:"var(--surface)",
+                      border:"1px solid var(--cream-dark)",
+                      borderRadius:"var(--r-md)",
+                      padding:"14px 16px",
+                    }}
+                  >
+                    <p style={{
+                      margin:"0 0 10px",
+                      fontSize:11, fontWeight:700,
+                      textTransform:"uppercase", letterSpacing:"0.07em",
+                      color:"var(--ink-2)",
+                      display:"flex", alignItems:"center", gap:6,
+                    }}>
+                      <span>{CATEGORY_ICONS[cat]}</span>
+                      {CATEGORY_LABELS[cat]}
+                    </p>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {plants.map(plant => (
+                        <div key={plant.plant_slug} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                          <span style={{ fontSize:12, color:"var(--ink)", minWidth:100, flexShrink:0 }}>
+                            {plant.plant_name}
+                          </span>
+                          <div style={{ flex:1, height:6, borderRadius:3, background:"var(--cream-dark)", overflow:"hidden" }}>
+                            <div style={{
+                              height:"100%",
+                              width: LEVEL_BAR_W[plant.max_level],
+                              background: LEVEL_COLORS[plant.max_level],
+                              borderRadius:3,
+                              transition:"width 0.6s ease",
+                            }} />
+                          </div>
+                          <span style={{
+                            fontSize:11, fontWeight:600,
+                            color: plant.max_level === "none" ? "var(--ink-3)" : "var(--ink)",
+                            minWidth:90, textAlign:"right", flexShrink:0,
+                          }}>
+                            {LEVEL_LABELS[plant.max_level]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Cities grid */}
+        <div className="anim-fade-up delay-2">
           <p className="label" style={{ marginBottom:12 }}>Miasta w województwie {voivName}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3" style={{ gap:8 }}>
-            {voivCities.map((city, i) => (
-              <Link
-                key={city.slug}
-                to={`/pylek/${city.slug}`}
-                className="city-card anim-fade-up"
-                style={{ animationDelay:`${i * 0.02}s` }}
-              >
-                <p style={{ fontSize:13, fontWeight:600, color:"var(--ink)", margin:0 }}>{city.name}</p>
-                {city.population > 0 && (
-                  <p style={{ fontSize:11, color:"var(--ink-3)", margin:"2px 0 0" }}>
-                    {city.population.toLocaleString("pl-PL")} mieszk.
-                  </p>
-                )}
-              </Link>
-            ))}
+            {voivCities.map((city, i) => {
+              const cityLevel = (cityLevels[city.slug] ?? "none") as PollenLevel;
+              const dotColor = LEVEL_COLORS[cityLevel];
+              return (
+                <Link
+                  key={city.slug}
+                  to={`/pylek/${city.slug}`}
+                  className="city-card anim-fade-up"
+                  style={{ animationDelay:`${i * 0.02}s` }}
+                >
+                  <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <div style={{
+                      width:8, height:8, borderRadius:"50%",
+                      background: dotColor,
+                      border:"1px solid rgba(0,0,0,0.1)",
+                      flexShrink:0,
+                    }} />
+                    <p style={{ fontSize:13, fontWeight:600, color:"var(--ink)", margin:0 }}>{city.name}</p>
+                  </div>
+                  {city.population > 0 && (
+                    <p style={{ fontSize:11, color:"var(--ink-3)", margin:"2px 0 0", paddingLeft:16 }}>
+                      {city.population.toLocaleString("pl-PL")} mieszk.
+                    </p>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
+        {/* Info blurb */}
         <div
-          className="anim-fade-up delay-2"
+          className="anim-fade-up delay-3"
           style={{
-            background:"rgba(27,67,50,0.07)",
-            border:"1px solid rgba(27,67,50,0.12)",
+            background:"rgba(27,67,50,0.05)",
+            border:"1px solid rgba(27,67,50,0.10)",
             borderRadius:"var(--r-md)",
             padding:"14px 18px",
             fontSize:13,
@@ -100,15 +243,15 @@ export default function VoivodeshipPage() {
           dla każdego miasta w województwie {voivName}. Dane z Open-Meteo, aktualizowane co 2 godziny.
         </div>
 
+        {/* All voivodeships */}
         <div className="anim-fade-up delay-3">
           <p className="label" style={{ marginBottom:10 }}>Inne województwa</p>
           <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-            {[["Mazowieckie","mazowieckie"],["Małopolskie","malopolskie"],["Śląskie","slaskie"],
-              ["Wielkopolskie","wielkopolskie"],["Dolnośląskie","dolnoslaskie"],["Pomorskie","pomorskie"]]
-              .filter(([,s]) => s !== wojewodztwo)
-              .map(([name, slug]) => (
+            {voivodeships
+              .filter(v => v.slug !== wojewodztwo)
+              .map(v => (
                 <Link
-                  key={slug} to={`/pylek/woj/${slug}`}
+                  key={v.slug} to={`/pylek/woj/${v.slug}`}
                   style={{
                     display:"inline-block", padding:"5px 13px", borderRadius:999,
                     fontSize:12, fontWeight:500, textDecoration:"none",
@@ -118,11 +261,12 @@ export default function VoivodeshipPage() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--forest)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(27,67,50,0.25)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--ink-2)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(24,24,15,0.08)"; }}
                 >
-                  {name}
+                  {v.name}
                 </Link>
               ))}
           </div>
         </div>
+
       </div>
     </>
   );

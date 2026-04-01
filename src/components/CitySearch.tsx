@@ -26,7 +26,6 @@ function searchLocally(cities: City[], q: string): City[] {
     .sort((a, b) => {
       const an = a.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const bn = b.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      // startsWith pierwszeństwo
       const aStart = an.startsWith(norm) ? 0 : 1;
       const bStart = bn.startsWith(norm) ? 0 : 1;
       if (aStart !== bStart) return aStart - bStart;
@@ -47,7 +46,6 @@ export default function CitySearch({ compact, onSelect }: CitySearchProps) {
   const search = useCallback(async (q: string) => {
     if (q.length < 3) { setResults([]); return; }
 
-    // Próba API (działa na Cloudflare Pages)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
       if (res.ok) {
@@ -60,7 +58,6 @@ export default function CitySearch({ compact, onSelect }: CitySearchProps) {
       // API niedostępne — fallback do client-side
     }
 
-    // Fallback: wyszukiwanie po cities.json
     const cities = await loadCities();
     setResults(searchLocally(cities, q));
     setOpen(true);
@@ -80,9 +77,18 @@ export default function CitySearch({ compact, onSelect }: CitySearchProps) {
   };
 
   return (
-    <div className="relative">
-      <div className={`flex items-center gap-2 bg-gray-100 rounded-full px-3 ${focused ? "ring-2 ring-green-500 bg-white" : ""} transition-all`}>
-        <span className="text-gray-400 text-sm">🔍</span>
+    <div style={{ position: "relative" }}>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        background: focused ? "var(--surface)" : "rgba(24,24,15,0.07)",
+        borderRadius: 999,
+        padding: "0 12px",
+        border: `1.5px solid ${focused ? "rgba(27,67,50,0.5)" : "transparent"}`,
+        transition: "background 0.15s, border-color 0.15s",
+      }}>
+        <span style={{ fontSize: 13, color: "var(--ink-3)", flexShrink: 0 }}>🔍</span>
         <input
           ref={inputRef}
           type="text"
@@ -91,30 +97,74 @@ export default function CitySearch({ compact, onSelect }: CitySearchProps) {
           onFocus={() => setFocused(true)}
           onBlur={() => { setFocused(false); setTimeout(() => setOpen(false), 150); }}
           placeholder={compact ? "Szukaj miasta..." : "Wpisz nazwę miasta (min. 3 litery)"}
-          className={`bg-transparent outline-none text-sm py-2 w-full ${compact ? "max-w-[180px]" : ""}`}
+          style={{
+            background: "transparent",
+            outline: "none",
+            border: "none",
+            fontSize: 13,
+            color: "var(--ink)",
+            padding: "9px 0",
+            width: "100%",
+            maxWidth: compact ? 180 : "none",
+          }}
         />
         {query && (
-          <button onClick={() => { setQuery(""); setResults([]); }} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+          <button
+            onClick={() => { setQuery(""); setResults([]); }}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--ink-3)", fontSize: 12, padding: 0, flexShrink: 0,
+              lineHeight: 1,
+            }}
+          >✕</button>
         )}
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
-          {results.map(city => (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+          background: "var(--surface)",
+          borderRadius: 14,
+          boxShadow: "0 8px 32px rgba(24,24,15,0.12)",
+          border: "1px solid rgba(24,24,15,0.08)",
+          zIndex: 9999,
+          overflow: "hidden",
+        }}>
+          {results.map((city, i) => (
             <button
               key={city.slug}
               onMouseDown={() => handleSelect(city)}
-              className="w-full text-left px-4 py-2.5 hover:bg-green-50 flex items-center justify-between text-sm border-b last:border-0 border-gray-50"
+              style={{
+                width: "100%", textAlign: "left",
+                padding: "10px 16px",
+                background: "none", border: "none",
+                borderBottom: i < results.length - 1 ? "1px solid rgba(24,24,15,0.06)" : "none",
+                cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                fontSize: 13,
+                transition: "background 0.1s",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "var(--forest-soft)")}
+              onMouseLeave={e => (e.currentTarget.style.background = "none")}
             >
-              <span className="font-medium">{city.name}</span>
-              <span className="text-gray-400 text-xs">{city.voivodeship_name}</span>
+              <span style={{ fontWeight: 600, color: "var(--ink)" }}>{city.name}</span>
+              <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{city.voivodeship_name}</span>
             </button>
           ))}
         </div>
       )}
 
       {open && query.length >= 3 && results.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 z-50 px-4 py-3 text-sm text-gray-500">
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+          background: "var(--surface)",
+          borderRadius: 14,
+          boxShadow: "0 8px 32px rgba(24,24,15,0.12)",
+          border: "1px solid rgba(24,24,15,0.08)",
+          zIndex: 9999,
+          padding: "12px 16px",
+          fontSize: 13, color: "var(--ink-3)",
+        }}>
           Nie znaleziono miasta „{query}"
         </div>
       )}

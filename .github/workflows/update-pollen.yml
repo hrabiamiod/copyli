@@ -26,7 +26,9 @@ jobs:
         run: npm ci
 
       - name: Fetch pollen data from Open-Meteo → D1
-        run: npx tsx scripts/fetch-pollen.ts
+        run: |
+          set -o pipefail
+          npx tsx scripts/fetch-pollen.ts 2>&1 | tee /tmp/fetch-pollen.log
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -40,7 +42,9 @@ jobs:
           D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
 
       - name: Generate static JSON files
-        run: npx tsx scripts/generate-static.ts
+        run: |
+          set -o pipefail
+          npx tsx scripts/generate-static.ts 2>&1 | tee /tmp/generate-static.log
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -61,3 +65,56 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+      - name: Notify ntfy.sh
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          TRIGGER="${{ github.event_name }}"
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TIMESTAMP=$(date -u "+%Y-%m-%d %H:%M UTC")
+
+          # Wyciągnij liczbę przetworzonych miast z logu
+          CITIES=$(grep -oP 'Przetworzono \K[0-9]+' /tmp/fetch-pollen.log 2>/dev/null | tail -1 || echo "?")
+          # Wyciągnij liczbę wygenerowanych plików miast z logu generate-static
+          FILES=$(grep -oP 'Wygenerowano dane dla \K[0-9]+' /tmp/generate-static.log 2>/dev/null | tail -1 || echo "?")
+
+          if [ "$TRIGGER" = "schedule" ]; then
+            TRIGGER_LABEL="Harmonogram (co 2h)"
+          else
+            TRIGGER_LABEL="Uruchomienie ręczne"
+          fi
+
+          if [ "$STATUS" = "success" ]; then
+            TAGS="seedling,white_check_mark"
+            PRIORITY="default"
+            TITLE="CoPyli — dane zaktualizowane"
+            BODY="Pomyslna aktualizacja danych pylkowych.
+
+Miasta: ${CITIES} przetworzonych
+Pliki JSON: ${FILES} miast
+Czas: ${TIMESTAMP}
+Tryb: ${TRIGGER_LABEL}
+
+Etapy: Open-Meteo -> D1 -> Walk Index -> Static JSON -> Build -> Cloudflare Pages
+
+${RUN_URL}"
+          else
+            TAGS="warning,x"
+            PRIORITY="high"
+            TITLE="CoPyli — blad aktualizacji"
+            BODY="Aktualizacja danych pylkowych nie powiodla sie.
+
+Czas: ${TIMESTAMP}
+Tryb: ${TRIGGER_LABEL}
+Status: ${STATUS}
+
+Sprawdz logi: ${RUN_URL}"
+          fi
+
+          curl -s \
+            -H "Title: ${TITLE}" \
+            -H "Tags: ${TAGS}" \
+            -H "Priority: ${PRIORITY}" \
+            -d "${BODY}" \
+            "https://ntfy.sh/copyli-update-feed-1910"

@@ -58,7 +58,7 @@ export default function HomePage() {
   }, []);
 
   const updatedAt = meta?.updated_at
-    ? new Date(meta.updated_at).toLocaleString("pl-PL", { hour: "2-digit", minute: "2-digit" })
+    ? new Date(meta.updated_at).toLocaleString("pl-PL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
     : null;
 
   const currentMonth = new Date().getMonth() + 1;
@@ -79,8 +79,8 @@ export default function HomePage() {
       <section
         style={{
           position: "relative",
-          height: "calc(100svh - 52px)",
-          minHeight: 480,
+          height: "clamp(420px, 72svh, 680px)",
+          minHeight: 420,
           overflow: "hidden",
         }}
       >
@@ -134,8 +134,9 @@ export default function HomePage() {
               <span style={{
                 marginLeft: "auto", fontSize: 10, color: "var(--ink-3)",
                 background: "rgba(24,24,15,0.06)", borderRadius: 6, padding: "2px 7px",
+                whiteSpace: "nowrap",
               }}>
-                {updatedAt}
+                ↻ {updatedAt}
               </span>
             )}
           </div>
@@ -218,27 +219,28 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── Mobile: bottom search hint ── */}
-        <div
-          className="md:hidden anim-fade-up delay-2"
-          style={{
-            position: "absolute",
-            bottom: 14,
-            left: 14,
-            right: 14,
-            zIndex: 800,
-            borderRadius: 16,
-            padding: "12px 16px",
-            background: "rgba(247,242,235,0.88)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.6)",
-            boxShadow: "0 8px 28px rgba(24,24,15,0.12)",
-          }}
-        >
-          <CitySearch />
-        </div>
       </section>
+
+      {/* Pasek aktualizacji + scroll hint */}
+      <div style={{
+        background: "var(--surface)",
+        borderBottom: "1px solid rgba(24,24,15,0.06)",
+        padding: "8px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12,
+      }}>
+        <p style={{ fontSize: 11, color: "var(--ink-3)", margin: 0 }}>
+          {updatedAt
+            ? <><span style={{ fontWeight: 600, color: "var(--ink-2)" }}>Ostatnia aktualizacja:</span> {updatedAt}</>
+            : "Ładowanie danych…"
+          }
+        </p>
+        <p style={{ fontSize: 11, color: "var(--ink-3)", margin: 0, whiteSpace: "nowrap" }}>
+          Dane z Open-Meteo · co 2h
+        </p>
+      </div>
 
       {/* ══════════════════════════════════════════════════════
           CONTENT BELOW MAP

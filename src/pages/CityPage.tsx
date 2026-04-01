@@ -135,7 +135,7 @@ export default function CityPage() {
                     <p style={{ fontSize:13, color:"var(--ink-3)" }}>Ładowanie mapy…</p>
                   </div>
                 }>
-                  <PollenMap cities={cities} mapData={[]} highlightCitySlug={city.slug} />
+                  <PollenMap cities={cities} mapData={[]} highlightCitySlug={city.slug} compact />
                 </Suspense>
               </div>
             </div>

@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import CitySearch from "./CitySearch";
+
+const LogoIcon = () => (
+  <svg width="15" height="14" viewBox="0 0 48 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path fill="var(--forest)" d="M25.946 44.938c-.664.845-2.021.375-2.021-.698V33.937a2.26 2.26 0 0 0-2.262-2.262H10.287c-.92 0-1.456-1.04-.92-1.788l7.48-10.471c1.07-1.497 0-3.578-1.842-3.578H1.237c-.92 0-1.456-1.04-.92-1.788L10.013.474c.214-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.471c-1.07 1.498 0 3.579 1.842 3.579h11.377c.943 0 1.473 1.088.89 1.83L25.947 44.94z" />
+  </svg>
+);
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isHome = location.pathname === "/";
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 4);
@@ -25,9 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           transition: "background 0.3s, border-color 0.3s",
         }}
       >
-        <div
-          className="max-w-7xl mx-auto px-4 h-full flex items-center gap-3"
-        >
+        <div className="max-w-7xl mx-auto px-4 h-full flex items-center gap-3">
           {/* Logo */}
           <Link
             to="/"
@@ -41,17 +47,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               letterSpacing: "-0.02em",
             }}
           >
-            <span style={{ fontSize: 18, lineHeight: 1 }}>🌸</span>
+            <LogoIcon />
             <span>
               CoPyli
               <span style={{ color: "var(--ink-3)", fontWeight: 400, fontFamily: "var(--font-body)" }}>.pl</span>
             </span>
           </Link>
 
-          {/* Search */}
-          <div style={{ flex: 1, maxWidth: 280 }}>
-            <CitySearch compact />
-          </div>
+          {/* Search — ukryte na stronie głównej (tam jest w hero panelu) */}
+          {!isHome && (
+            <div style={{ flex: 1, maxWidth: 280 }}>
+              <CitySearch compact />
+            </div>
+          )}
 
           {/* Nav */}
           <nav className="hidden md:flex items-center ml-auto" style={{ gap: 2 }}>
@@ -97,8 +105,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-7">
 
             <div>
-              <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, color: "var(--forest)", marginBottom: 10 }}>
-                🌸 CoPyli.pl
+              <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, color: "var(--forest)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                <LogoIcon /> CoPyli.pl
               </p>
               <p style={{ fontSize: 12, lineHeight: 1.65, color: "var(--ink-2)" }}>
                 Interaktywna mapa pyłkowa Polski dla alergików.

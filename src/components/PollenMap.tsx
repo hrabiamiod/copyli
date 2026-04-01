@@ -9,15 +9,17 @@ interface PollenMapProps {
   cityLevels?: Record<string, string>;
   onCityClick?: (city: City) => void;
   highlightCitySlug?: string;
+  compact?: boolean;
 }
 
-export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClick, highlightCitySlug }: PollenMapProps) {
+export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClick, highlightCitySlug, compact }: PollenMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletRef = useRef<any>(null);
   const navigate = useNavigate();
   const [geolocating, setGeolocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
 
   // Budujemy mapę voivodeship_slug → max_level dla kolorowania markerów
   const voivLevelMap = new Map<string, PollenLevel>();
@@ -41,7 +43,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
       map = L.map(mapRef.current!, {
         center: [52.1, 19.4],
         zoom: 7,
-        zoomControl: true,
+        zoomControl: false,
         scrollWheelZoom: true,
         minZoom: 6,
         maxZoom: 14,
@@ -49,7 +51,9 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         maxBoundsViscosity: 0.9,
       });
 
-      // Kafelek bez etykiet — polskie nazwy dodamy własnoręcznie przez GeoJSON tooltips
+      // Na mini-mapie (CityPage) zoom w prawym dolnym rogu — nie zasłania legendy
+      L.control.zoom({ position: compact ? "bottomright" : "topleft" }).addTo(map);
+
       L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
@@ -77,7 +81,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
               const slug = feature?.properties?.slug as string;
               const name = feature?.properties?.name as string;
               const level = getVoivodeshipLevel(mapData, slug);
-              // Stała etykieta po polsku na mapie
               layer.bindTooltip(`<span>${name}</span><br><small>${LEVEL_LABELS[level]}</small>`, {
                 permanent: true,
                 direction: "center",
@@ -91,18 +94,22 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         console.warn("Nie udało się załadować GeoJSON województw:", e);
       }
 
-      // Tylko polskie miasta (mające przypisane województwo z danych)
       const polishCities = cities.filter(c =>
         voivLevelMap.has(c.voivodeship_slug) &&
         c.lat >= 49.0 && c.lat <= 54.9 &&
         c.lon >= 14.1 && c.lon <= 24.2
       ).sort((a, b) => b.population - a.population);
 
+      const getSize = (city: City) => {
+        const isHighlighted = city.slug === highlightCitySlug;
+        return isHighlighted ? 16 : city.population > 200000 ? 13 : city.population > 50000 ? 10 : 7;
+      };
+
       const createMarker = (city: City) => {
         const level = (cityLevels[city.slug] ?? voivLevelMap.get(city.voivodeship_slug) ?? "none") as PollenLevel;
         const color = LEVEL_COLORS[level];
         const isHighlighted = city.slug === highlightCitySlug;
-        const size = isHighlighted ? 16 : city.population > 200000 ? 13 : city.population > 50000 ? 10 : 7;
+        const size = getSize(city);
 
         const icon = L.divIcon({
           html: `<div style="
@@ -147,7 +154,24 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         if (z >= 10) subset = polishCities;
         else if (z >= 8) subset = polishCities.slice(0, 100);
         else subset = polishCities.slice(0, 20);
-        subset.forEach(city => createMarker(city).addTo(layerGroup));
+
+        subset.forEach(city => {
+          const marker = createMarker(city);
+          const sz = getSize(city);
+          // Etykiety z nazwą miasta — widoczne dla dużych miast lub przy przybliżeniu
+          const showLabel = city.slug === highlightCitySlug ||
+            (z >= 9 && city.population > 30000) ||
+            (z >= 7 && city.population > 150000);
+          if (showLabel) {
+            marker.bindTooltip(city.name, {
+              permanent: true,
+              direction: "right",
+              className: "city-name-label",
+              offset: [sz / 2 + 4, 0] as [number, number],
+            });
+          }
+          marker.addTo(layerGroup);
+        });
       };
 
       renderMarkers();
@@ -174,10 +198,26 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   const geoMarkerRef = useRef<import("leaflet").Marker | null>(null);
 
   const handleGeolocate = () => {
-    if (!navigator.geolocation || !mapInstanceRef.current) return;
+    if (!navigator.geolocation) {
+      setGeoError("Przeglądarka nie obsługuje geolokalizacji");
+      setTimeout(() => setGeoError(null), 4000);
+      return;
+    }
+    if (!mapInstanceRef.current) {
+      setGeoError("Mapa jeszcze się ładuje, spróbuj za chwilę");
+      setTimeout(() => setGeoError(null), 3000);
+      return;
+    }
     setGeolocating(true);
+    setGeoError(null);
 
-    const onError = () => setGeolocating(false);
+    const onError = (err: GeolocationPositionError) => {
+      setGeolocating(false);
+      if (err.code === 1) setGeoError("Brak zgody na lokalizację — zezwól w przeglądarce");
+      else if (err.code === 2) setGeoError("Nie można ustalić lokalizacji");
+      else setGeoError("Przekroczono czas oczekiwania");
+      setTimeout(() => setGeoError(null), 5000);
+    };
 
     const onSuccess = (pos: GeolocationPosition) => {
       try {
@@ -187,7 +227,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
 
         map.setView([latitude, longitude], 11);
 
-        // Usuń poprzedni znacznik
         if (geoMarkerRef.current) {
           geoMarkerRef.current.remove();
           geoMarkerRef.current = null;
@@ -242,23 +281,51 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full rounded-xl" />
 
-      <button
-        onClick={handleGeolocate}
-        className="absolute bottom-4 right-4 z-[1000] bg-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center text-lg hover:bg-green-50 transition-colors"
-        title="Moja lokalizacja"
-      >
-        {geolocating ? "⌛" : "📍"}
-      </button>
+      {/* Geolocate button — tylko na pełnej mapie */}
+      {!compact && (
+        <button
+          onClick={handleGeolocate}
+          className="absolute bottom-4 right-4 z-[1000] bg-white rounded-full shadow-lg w-10 h-10 flex items-center justify-center text-lg hover:bg-green-50 transition-colors"
+          title="Moja lokalizacja"
+        >
+          {geolocating ? "⌛" : "📍"}
+        </button>
+      )}
 
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 text-xs">
-        <p className="font-semibold text-gray-700 mb-2 text-[11px] uppercase tracking-wide">Stężenie pyłków</p>
-        {(["none", "low", "medium", "high", "very_high"] as const).map(level => (
-          <div key={level} className="flex items-center gap-2 mb-1">
-            <div className="w-3 h-3 rounded-full border border-black/10" style={{ background: LEVEL_COLORS[level] }} />
-            <span className="text-gray-600">{LEVEL_LABELS[level]}</span>
-          </div>
-        ))}
-      </div>
+      {/* Błąd geolokalizacji */}
+      {!compact && geoError && (
+        <div style={{
+          position: "absolute",
+          bottom: 64,
+          right: 16,
+          zIndex: 1000,
+          background: "rgba(24,24,15,0.88)",
+          color: "#fff",
+          borderRadius: 12,
+          padding: "9px 14px",
+          fontSize: 12,
+          fontWeight: 500,
+          backdropFilter: "blur(8px)",
+          maxWidth: 220,
+          textAlign: "center",
+          lineHeight: 1.5,
+        }}>
+          {geoError}
+        </div>
+      )}
+
+      {/* Legenda — tylko na pełnej mapie */}
+      {!compact && (
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 text-xs">
+          <p className="font-semibold text-gray-700 mb-2 text-[11px] uppercase tracking-wide">Stężenie pyłków</p>
+          {(["none", "low", "medium", "high", "very_high"] as const).map(level => (
+            <div key={level} className="flex items-center gap-2 mb-1">
+              <div className="w-3 h-3 rounded-full border border-black/10" style={{ background: LEVEL_COLORS[level] }} />
+              <span className="text-gray-600">{LEVEL_LABELS[level]}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

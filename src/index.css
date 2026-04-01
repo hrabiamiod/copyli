@@ -176,6 +176,26 @@ body::before {
 }
 .voiv-label::before { display: none !important; }
 
+/* Etykiety nazw miast na mapie */
+.city-name-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: var(--font-body) !important;
+  font-size: 10px !important;
+  font-weight: 600 !important;
+  color: rgba(24,24,15,0.80) !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  text-shadow:
+    1px  1px 0 rgba(247,242,235,0.95),
+   -1px -1px 0 rgba(247,242,235,0.95),
+    1px -1px 0 rgba(247,242,235,0.95),
+   -1px  1px 0 rgba(247,242,235,0.95) !important;
+  letter-spacing: 0.01em !important;
+}
+.city-name-label::before { display: none !important; }
+
 /* ─── Cookie Consent ──────────────────────────────────────────── */
 #cc-main {
   --cc-font-family: var(--font-body);
