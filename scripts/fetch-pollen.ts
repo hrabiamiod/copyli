@@ -11,7 +11,7 @@
 const CF_API_BASE = "https://api.cloudflare.com/client/v4";
 const OPEN_METEO_AIR_QUALITY = "https://air-quality-api.open-meteo.com/v1/air-quality";
 const OPEN_METEO_FORECAST = "https://api.open-meteo.com/v1/forecast";
-const BATCH_SIZE = 10; // Mniejszy batch żeby nie przeciążyć Open-Meteo
+const BATCH_SIZE = 50;
 const FORECAST_DAYS = 5;
 
 interface City {
@@ -279,9 +279,9 @@ async function main() {
     await processBatch(batch, plants);
     processed += batch.length;
 
-    // Krótka przerwa między batchami, żeby nie przeciążyć API
+    // Krótka przerwa między batchami
     if (i + BATCH_SIZE < cities.length) {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 200));
     }
   }
 
