@@ -6,11 +6,12 @@ import { getVoivodeshipLevel, getVoivodeshipFillColor, LEVEL_LABELS, LEVEL_COLOR
 interface PollenMapProps {
   cities: City[];
   mapData: MapData[];
+  cityLevels?: Record<string, string>;
   onCityClick?: (city: City) => void;
   highlightCitySlug?: string;
 }
 
-export default function PollenMap({ cities, mapData, onCityClick, highlightCitySlug }: PollenMapProps) {
+export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClick, highlightCitySlug }: PollenMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,7 +99,7 @@ export default function PollenMap({ cities, mapData, onCityClick, highlightCityS
       ).sort((a, b) => b.population - a.population);
 
       const createMarker = (city: City) => {
-        const level = voivLevelMap.get(city.voivodeship_slug) ?? "none";
+        const level = (cityLevels[city.slug] ?? voivLevelMap.get(city.voivodeship_slug) ?? "none") as PollenLevel;
         const color = LEVEL_COLORS[level];
         const isHighlighted = city.slug === highlightCitySlug;
         const size = isHighlighted ? 16 : city.population > 200000 ? 13 : city.population > 50000 ? 10 : 7;

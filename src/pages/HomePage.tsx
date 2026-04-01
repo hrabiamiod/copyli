@@ -41,6 +41,7 @@ export default function HomePage() {
   const [mapData, setMapData] = useState<MapData[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [meta, setMeta] = useState<MetaData | null>(null);
+  const [cityLevels, setCityLevels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,8 +50,9 @@ export default function HomePage() {
       fetch("/data/map-data.json").then(r => r.json()),
       fetch("/data/plants.json").then(r => r.json()),
       fetch("/data/meta.json").then(r => r.json()),
-    ]).then(([c, m, p, mt]) => {
-      setCities(c); setMapData(m); setPlants(p); setMeta(mt);
+      fetch("/data/city-levels.json").then(r => r.json()).catch(() => ({})),
+    ]).then(([c, m, p, mt, cl]) => {
+      setCities(c); setMapData(m); setPlants(p); setMeta(mt); setCityLevels(cl);
       setLoading(false);
     });
   }, []);
@@ -100,7 +102,7 @@ export default function HomePage() {
               </div>
             }
           >
-            {!loading && <PollenMap cities={cities} mapData={mapData} />}
+            {!loading && <PollenMap cities={cities} mapData={mapData} cityLevels={cityLevels} />}
           </Suspense>
         </div>
 

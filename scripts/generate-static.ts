@@ -81,6 +81,32 @@ async function main() {
   `);
   writeJSON("map-data.json", mapData);
 
+  // 4b. Poziomy pyłków per miasto — do kolorowania markerów na mapie
+  console.log("Generowanie city-levels.json...");
+  const cityLevelsRaw = await d1Query(`
+    SELECT c.slug as city_slug,
+      CASE MAX(CASE pc.level
+        WHEN 'none'      THEN 0
+        WHEN 'low'       THEN 1
+        WHEN 'medium'    THEN 2
+        WHEN 'high'      THEN 3
+        WHEN 'very_high' THEN 4
+        ELSE 0 END)
+      WHEN 0 THEN 'none'
+      WHEN 1 THEN 'low'
+      WHEN 2 THEN 'medium'
+      WHEN 3 THEN 'high'
+      WHEN 4 THEN 'very_high'
+      END as max_level
+    FROM pollen_current pc
+    JOIN cities c ON pc.city_id = c.id
+    GROUP BY c.id
+  `) as Array<{ city_slug: string; max_level: string }>;
+  // Kompaktowy obiekt {slug: level} — ok. 20KB
+  const cityLevels: Record<string, string> = {};
+  for (const row of cityLevelsRaw) cityLevels[row.city_slug] = row.max_level;
+  writeJSON("city-levels.json", cityLevels);
+
   // 5. Wszystkie dane pyłkowe naraz (bulk, in-memory split per miasto)
   console.log("Pobieranie danych pyłkowych dla wszystkich miast...");
   const allPollen = d1Query(`
