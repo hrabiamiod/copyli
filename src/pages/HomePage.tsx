@@ -79,7 +79,7 @@ export default function HomePage() {
       <section
         style={{
           position: "relative",
-          height: "clamp(420px, 72svh, 680px)",
+          height: "75svh",
           minHeight: 420,
           overflow: "hidden",
         }}
