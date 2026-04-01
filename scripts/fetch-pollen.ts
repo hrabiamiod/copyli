@@ -113,6 +113,33 @@ async function d1Query(sql: string, params: (string | number | null)[] = []): Pr
   return { results: data.result?.[0]?.results ?? [] };
 }
 
+// D1 batch API — wysyła wiele zapytań w jednym HTTP request (maks. 100 per batch)
+async function d1Batch(statements: { sql: string; params?: (string | number | null)[] }[]): Promise<void> {
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const dbId = process.env.D1_DATABASE_ID;
+  const CHUNK = 100;
+
+  for (let i = 0; i < statements.length; i += CHUNK) {
+    const chunk = statements.slice(i, i + CHUNK);
+    const res = await fetch(
+      `${CF_API_BASE}/accounts/${accountId}/d1/database/${dbId}/batch`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(chunk.map(s => ({ sql: s.sql, params: s.params ?? [] }))),
+      }
+    );
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`D1 batch failed: ${res.status} ${text}`);
+    }
+  }
+}
+
 async function fetchOpenMeteo(lat: number, lon: number): Promise<OpenMeteoAirQuality | null> {
   const params = new URLSearchParams({
     latitude: lat.toString(),
@@ -182,10 +209,9 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
     const times = data.hourly.time;
     const currentIdx = getCurrentHourIndex(times);
 
-    // Dane aktualne
-    const currentInserts: string[] = [];
-    // Prognoza
-    const forecastInserts: string[] = [];
+    const currentInserts: { sql: string }[] = [];
+    const forecastInserts: { sql: string }[] = [];
+    const weatherInserts: { sql: string; params: (string | number | null)[] }[] = [];
 
     for (const [field, plantSlug] of Object.entries(POLLEN_FIELD_MAP)) {
       const plant = plants.find(p => p.slug === plantSlug);
@@ -198,9 +224,9 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
       const currentLevel = getLevel(currentConc, plant);
       const measuredAt = times[currentIdx] ?? now;
 
-      currentInserts.push(
+      currentInserts.push({ sql:
         `INSERT OR REPLACE INTO pollen_current (city_id, plant_id, concentration, level, source, measured_at, updated_at) VALUES (${city.id}, ${plant.id}, ${currentConc}, '${currentLevel}', 'open-meteo', '${measuredAt}', '${now}')`
-      );
+      });
 
       // Prognoza na 5 dni
       for (let day = 1; day <= FORECAST_DAYS; day++) {
@@ -210,9 +236,9 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
         const avgConc = getDayAverage(values, times, dateStr);
         const level = getLevel(avgConc, plant);
 
-        forecastInserts.push(
+        forecastInserts.push({ sql:
           `INSERT OR REPLACE INTO pollen_forecast (city_id, plant_id, forecast_date, concentration, level, updated_at) VALUES (${city.id}, ${plant.id}, '${dateStr}', ${avgConc.toFixed(2)}, '${level}', '${now}')`
-        );
+        });
       }
 
       // Dane pogodowe (z pierwszego przejścia)
@@ -225,20 +251,15 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
 
         const aqiLabel = aqi <= 20 ? "dobra" : aqi <= 40 ? "umiarkowana" : aqi <= 60 ? "zła" : "bardzo zła";
 
-        await d1Query(
-          `INSERT OR REPLACE INTO weather_current (city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [city.id, temperature, windSpeed, precipitation, humidity, aqi, aqiLabel, now]
-        );
+        weatherInserts.push({
+          sql: `INSERT OR REPLACE INTO weather_current (city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          params: [city.id, temperature, windSpeed, precipitation, humidity, aqi, aqiLabel, now],
+        });
       }
     }
 
-    // Batch insert do D1
-    for (const sql of currentInserts) {
-      await d1Query(sql);
-    }
-    for (const sql of forecastInserts) {
-      await d1Query(sql);
-    }
+    // Jeden batch request zamiast dziesiątek pojedynczych zapytań
+    await d1Batch([...weatherInserts, ...currentInserts, ...forecastInserts]);
   });
 
   await Promise.all(promises);
