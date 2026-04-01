@@ -113,30 +113,15 @@ async function d1Query(sql: string, params: (string | number | null)[] = []): Pr
   return { results: data.result?.[0]?.results ?? [] };
 }
 
-// D1 batch API — wysyła wiele zapytań w jednym HTTP request (maks. 100 per batch)
-async function d1Batch(statements: { sql: string; params?: (string | number | null)[] }[]): Promise<void> {
-  const token = process.env.CLOUDFLARE_API_TOKEN;
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-  const dbId = process.env.D1_DATABASE_ID;
-  const CHUNK = 100;
-
-  for (let i = 0; i < statements.length; i += CHUNK) {
-    const chunk = statements.slice(i, i + CHUNK);
-    const res = await fetch(
-      `${CF_API_BASE}/accounts/${accountId}/d1/database/${dbId}/batch`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(chunk.map(s => ({ sql: s.sql, params: s.params ?? [] }))),
-      }
-    );
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`D1 batch failed: ${res.status} ${text}`);
-    }
+// Wysyła wiele row VALUES w jednym INSERT — jeden HTTP request na tabelę per batch miast
+async function d1MultiInsert(table: string, columns: string, valueRows: string[]): Promise<void> {
+  if (!valueRows.length) return;
+  // SQLite ma limit ~500 wierszy per INSERT — dzielimy na chunki
+  const CHUNK = 200;
+  for (let i = 0; i < valueRows.length; i += CHUNK) {
+    const chunk = valueRows.slice(i, i + CHUNK);
+    const sql = `INSERT OR REPLACE INTO ${table} (${columns}) VALUES ${chunk.join(",")}`;
+    await d1Query(sql);
   }
 }
 
@@ -194,13 +179,17 @@ async function fetchWeather(lat: number, lon: number): Promise<Record<string, (n
 async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
   const now = new Date().toISOString();
 
+  // Zbieramy VALUES z całego batchu — potem jeden INSERT per tabela
+  const currentRows: string[] = [];
+  const forecastRows: string[] = [];
+  const weatherRows: string[] = [];
+
   const promises = cities.map(async (city) => {
     const [data, weather] = await Promise.all([
       fetchOpenMeteo(city.lat, city.lon),
       fetchWeather(city.lat, city.lon),
     ]);
     if (!data || !data.hourly) return;
-    // Merge danych pogodowych z Forecast API do obiektu hourly
     if (weather.temperature_2m) data.hourly.temperature_2m = weather.temperature_2m;
     if (weather.relative_humidity_2m) data.hourly.relative_humidity_2m = weather.relative_humidity_2m;
     if (weather.wind_speed_10m) data.hourly.wind_speed_10m = weather.wind_speed_10m;
@@ -208,10 +197,6 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
 
     const times = data.hourly.time;
     const currentIdx = getCurrentHourIndex(times);
-
-    const currentInserts: { sql: string }[] = [];
-    const forecastInserts: { sql: string }[] = [];
-    const weatherInserts: { sql: string; params: (string | number | null)[] }[] = [];
 
     for (const [field, plantSlug] of Object.entries(POLLEN_FIELD_MAP)) {
       const plant = plants.find(p => p.slug === plantSlug);
@@ -222,47 +207,45 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
 
       const currentConc = values[currentIdx] ?? 0;
       const currentLevel = getLevel(currentConc, plant);
-      const measuredAt = times[currentIdx] ?? now;
+      const measuredAt = (times[currentIdx] ?? now).replace(/'/g, "''");
 
-      currentInserts.push({ sql:
-        `INSERT OR REPLACE INTO pollen_current (city_id, plant_id, concentration, level, source, measured_at, updated_at) VALUES (${city.id}, ${plant.id}, ${currentConc}, '${currentLevel}', 'open-meteo', '${measuredAt}', '${now}')`
-      });
+      currentRows.push(
+        `(${city.id}, ${plant.id}, ${currentConc}, '${currentLevel}', 'open-meteo', '${measuredAt}', '${now}')`
+      );
 
-      // Prognoza na 5 dni
       for (let day = 1; day <= FORECAST_DAYS; day++) {
         const forecastDate = new Date();
         forecastDate.setDate(forecastDate.getDate() + day);
         const dateStr = forecastDate.toISOString().substring(0, 10);
         const avgConc = getDayAverage(values, times, dateStr);
         const level = getLevel(avgConc, plant);
-
-        forecastInserts.push({ sql:
-          `INSERT OR REPLACE INTO pollen_forecast (city_id, plant_id, forecast_date, concentration, level, updated_at) VALUES (${city.id}, ${plant.id}, '${dateStr}', ${avgConc.toFixed(2)}, '${level}', '${now}')`
-        });
+        forecastRows.push(
+          `(${city.id}, ${plant.id}, '${dateStr}', ${avgConc.toFixed(2)}, '${level}', '${now}')`
+        );
       }
 
-      // Dane pogodowe (z pierwszego przejścia)
       if (plantSlug === "grass") {
         const windSpeed = (data.hourly.wind_speed_10m as (number | null)[] | undefined)?.[currentIdx] ?? 0;
         const precipitation = (data.hourly.precipitation as (number | null)[] | undefined)?.[currentIdx] ?? 0;
         const humidity = (data.hourly.relative_humidity_2m as (number | null)[] | undefined)?.[currentIdx] ?? 0;
         const temperature = (data.hourly.temperature_2m as (number | null)[] | undefined)?.[currentIdx] ?? 0;
         const aqi = (data.hourly.european_aqi as (number | null)[] | undefined)?.[currentIdx] ?? 0;
-
         const aqiLabel = aqi <= 20 ? "dobra" : aqi <= 40 ? "umiarkowana" : aqi <= 60 ? "zła" : "bardzo zła";
-
-        weatherInserts.push({
-          sql: `INSERT OR REPLACE INTO weather_current (city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          params: [city.id, temperature, windSpeed, precipitation, humidity, aqi, aqiLabel, now],
-        });
+        weatherRows.push(
+          `(${city.id}, ${temperature}, ${windSpeed}, ${precipitation}, ${humidity}, ${aqi}, '${aqiLabel}', '${now}')`
+        );
       }
     }
-
-    // Jeden batch request zamiast dziesiątek pojedynczych zapytań
-    await d1Batch([...weatherInserts, ...currentInserts, ...forecastInserts]);
   });
 
   await Promise.all(promises);
+
+  // 3 zapytania na cały batch miast zamiast ~310 pojedynczych
+  await Promise.all([
+    d1MultiInsert("weather_current", "city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at", weatherRows),
+    d1MultiInsert("pollen_current", "city_id, plant_id, concentration, level, source, measured_at, updated_at", currentRows),
+    d1MultiInsert("pollen_forecast", "city_id, plant_id, forecast_date, concentration, level, updated_at", forecastRows),
+  ]);
 }
 
 async function main() {
