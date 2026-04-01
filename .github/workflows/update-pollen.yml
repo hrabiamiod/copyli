@@ -89,27 +89,12 @@ jobs:
             TAGS="seedling,white_check_mark"
             PRIORITY="default"
             TITLE="CoPyli — dane zaktualizowane"
-            BODY="Pomyslna aktualizacja danych pylkowych.
-
-Miasta: ${CITIES} przetworzonych
-Pliki JSON: ${FILES} miast
-Czas: ${TIMESTAMP}
-Tryb: ${TRIGGER_LABEL}
-
-Etapy: Open-Meteo -> D1 -> Walk Index -> Static JSON -> Build -> Cloudflare Pages
-
-${RUN_URL}"
+            BODY=$(printf "Pomyslna aktualizacja danych pylkowych.\n\nMiasta: %s przetworzonych\nPliki JSON: %s miast\nCzas: %s\nTryb: %s\n\nEtapy: Open-Meteo -> D1 -> Walk Index -> Static JSON -> Build -> CF Pages\n\n%s" "${CITIES}" "${FILES}" "${TIMESTAMP}" "${TRIGGER_LABEL}" "${RUN_URL}")
           else
             TAGS="warning,x"
             PRIORITY="high"
             TITLE="CoPyli — blad aktualizacji"
-            BODY="Aktualizacja danych pylkowych nie powiodla sie.
-
-Czas: ${TIMESTAMP}
-Tryb: ${TRIGGER_LABEL}
-Status: ${STATUS}
-
-Sprawdz logi: ${RUN_URL}"
+            BODY=$(printf "Aktualizacja danych pylkowych nie powiodla sie.\n\nCzas: %s\nTryb: %s\nStatus: %s\n\nSprawdz logi: %s" "${TIMESTAMP}" "${TRIGGER_LABEL}" "${STATUS}" "${RUN_URL}")
           fi
 
           curl -s \
