@@ -29,7 +29,7 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Google Analytics — załadowane dopiero po zgodzie -->
+    <!-- Analityka — załadowana dopiero po zgodzie -->
     <script>
       function loadGA() {
         if (window._gaLoaded) return;
@@ -43,6 +43,21 @@
         window.gtag = gtag;
         gtag('js', new Date());
         gtag('config', 'G-0R2ZH1EK8M', { anonymize_ip: true });
+      }
+
+      function loadAhrefs() {
+        if (window._ahrefsLoaded) return;
+        window._ahrefsLoaded = true;
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://analytics.ahrefs.com/analytics.js';
+        s.dataset.key = '996q+i0KZQAJUPqgO5ppWA';
+        document.head.appendChild(s);
+      }
+
+      function loadAnalytics() {
+        loadGA();
+        loadAhrefs();
       }
     </script>
 
@@ -80,14 +95,14 @@
 
         onConsent: function() {
           if (CookieConsent.acceptedCategory('analytics')) {
-            loadGA();
+            loadAnalytics();
           }
         },
 
         onChange: function({ changedCategories }) {
           if (changedCategories.includes('analytics')) {
             if (CookieConsent.acceptedCategory('analytics')) {
-              loadGA();
+              loadAnalytics();
             }
           }
         },
@@ -121,8 +136,8 @@
                     linkedCategory: 'necessary',
                   },
                   {
-                    title: 'Analityczne (Google Analytics)',
-                    description: 'Pomagają nam zrozumieć, jak użytkownicy korzystają z serwisu (np. które strony są najczęściej odwiedzane). Dane są anonimizowane i nie są sprzedawane.',
+                    title: 'Analityczne (Google Analytics i Ahrefs)',
+                    description: 'Pomagają nam zrozumieć, jak użytkownicy korzystają z serwisu (np. które strony są najczęściej odwiedzane). Używamy Google Analytics oraz Ahrefs Analytics. Dane są anonimizowane i nie są sprzedawane.',
                     linkedCategory: 'analytics',
                   }
                 ]
