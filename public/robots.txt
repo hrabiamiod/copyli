@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Nie indeksuj surowych danych JSON i API
+Disallow: /data/
+Disallow: /api/
+
 Sitemap: https://copyli.pl/sitemap.xml
