@@ -140,19 +140,19 @@ async function fetchOpenMeteo(lat: number, lon: number): Promise<OpenMeteoAirQua
     timezone: "Europe/Warsaw",
   });
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const res = await fetch(`${OPEN_METEO_AIR_QUALITY}?${params}`, {
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(8000),
       });
       if (res.ok) return (await res.json()) as OpenMeteoAirQuality;
       if (res.status === 429 || res.status >= 500) {
-        await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+        await new Promise(r => setTimeout(r, 1000));
         continue;
       }
       return null;
     } catch {
-      if (attempt < 2) await new Promise(r => setTimeout(r, 3000));
+      if (attempt < 1) await new Promise(r => setTimeout(r, 500));
     }
   }
   return null;
@@ -167,7 +167,7 @@ async function fetchWeather(lat: number, lon: number): Promise<Record<string, (n
     timezone: "Europe/Warsaw",
   });
   try {
-    const res = await fetch(`${OPEN_METEO_FORECAST}?${params}`, { signal: AbortSignal.timeout(15000) });
+    const res = await fetch(`${OPEN_METEO_FORECAST}?${params}`, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return {};
     const d = (await res.json()) as { hourly?: Record<string, (number | null)[]> };
     return d.hourly ?? {};
