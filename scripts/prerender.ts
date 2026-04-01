@@ -143,7 +143,7 @@ function levelBadge(level: string): string {
 
 // ─── Generowanie stron miast ───────────────────────────────────────────────
 
-function generateCityPage(city: City): void {
+function generateCityPage(city: City, allCities: City[]): void {
   const cityData = readJson<CityData>(path.join(DATA, "cities", `${city.slug}.json`));
   const pollen = cityData?.pollen ?? [];
   const activePollen = pollen.filter(p => p.level !== "none");
@@ -165,6 +165,15 @@ function generateCityPage(city: City): void {
       ).join("")
     : `<tr><td colspan="3" style="padding:8px 12px;color:#6b7280">Brak aktywnych alergenów</td></tr>`;
 
+  // Inne miasta w tym samym województwie (max 8 — wewnętrzne linkowanie)
+  const siblingCities = allCities
+    .filter(c => c.voivodeship_slug === city.voivodeship_slug && c.slug !== city.slug)
+    .sort((a, b) => b.population - a.population)
+    .slice(0, 8);
+  const siblingLinks = siblingCities.map(c =>
+    `<li style="display:inline"><a href="/pylek/${c.slug}" style="color:#15803d;text-decoration:none;font-size:0.875rem">${c.name}</a></li>`
+  ).join("<li style='display:inline;color:#d1d5db'> · </li>");
+
   const bodyHtml = `
 <main style="font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;padding:24px 16px">
   <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
@@ -185,6 +194,8 @@ function generateCityPage(city: City): void {
     </tr></thead>
     <tbody>${pollenRows}</tbody>
   </table>
+  ${siblingLinks ? `<p style="color:#6b7280;font-size:0.875rem;margin-bottom:8px">Inne miasta w województwie ${city.voivodeship_name}:</p>
+  <ul style="list-style:none;padding:0;margin-bottom:16px">${siblingLinks}</ul>` : ""}
   <p style="color:#6b7280;font-size:0.875rem">
     Dane pyłkowe dla ${city.name} (${city.voivodeship_name}) aktualizowane co 2 godziny na podstawie modelu Open-Meteo.
     Współrzędne: ${city.lat.toFixed(4)}°N, ${city.lon.toFixed(4)}°E.
@@ -237,7 +248,7 @@ function generateVoivodeshipPage(voiv: Voivodeship, cities: City[]): void {
   const description = `Aktualne stężenie pyłków w województwie ${voiv.name}. Dane dla ${voivCities.length} miast regionu, m.in.: ${topCities}. Mapa pylenia i prognoza dla alergików.`;
   const canonical = `https://copyli.pl/pylek/woj/${voiv.slug}`;
 
-  const cityList = voivCities.slice(0, 30).map(c =>
+  const cityList = voivCities.map(c =>
     `<li><a href="/pylek/${c.slug}" style="color:#15803d;text-decoration:none">${c.name}</a></li>`
   ).join("");
 
@@ -337,7 +348,7 @@ async function main() {
   console.log(`🌸 Pre-renderowanie ${cities.length} stron miast...`);
   let done = 0;
   for (const city of cities) {
-    generateCityPage(city);
+    generateCityPage(city, cities);
     done++;
     if (done % 100 === 0) process.stdout.write(`  ${done}/${cities.length}\r`);
   }
