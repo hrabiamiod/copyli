@@ -27,6 +27,18 @@ const LEVEL_COLORS: Record<string, string> = {
   very_high: "#ef4444",
 };
 
+interface PlantRecord {
+  id: number;
+  slug: string;
+  name_pl: string;
+  name_latin: string;
+  category: string;
+  icon: string;
+  month_start: number;
+  month_end: number;
+  peak_months: string;
+}
+
 interface City {
   id: number;
   name: string;
@@ -296,6 +308,79 @@ function generateVoivodeshipPage(voiv: Voivodeship, cities: City[]): void {
   fs.writeFileSync(path.join(outDir, `${voiv.slug}.html`), html);
 }
 
+// ─── Generowanie stron roślin ──────────────────────────────────────────────
+
+const CATEGORY_LABELS: Record<string, string> = { tree: "Drzewa", grass: "Trawy", weed: "Chwasty" };
+const MONTHS_PL = ["Sty","Lut","Mar","Kwi","Maj","Cze","Lip","Sie","Wrz","Paź","Lis","Gru"];
+
+function generatePlantPage(plant: PlantRecord, allPlants: PlantRecord[]): void {
+  const title = `${plant.name_pl} — kiedy pyli, alergia i stężenie pyłków w Polsce | CoPyli.pl`;
+  const description = `Kiedy pyli ${plant.name_pl} (${plant.name_latin}) w Polsce? Sezon pylenia, aktualne stężenia w województwach, reaktywność krzyżowa i wskazówki dla alergików uczulonych na pyłek ${plant.name_pl}.`;
+  const canonical = `https://copyli.pl/pylek/roslina/${plant.slug}`;
+
+  const peakMonths: number[] = plant.peak_months ? JSON.parse(plant.peak_months) : [];
+
+  const monthBar = MONTHS_PL.map((m, i) => {
+    const month = i + 1;
+    const inRange = plant.month_start && plant.month_end
+      ? (plant.month_start <= plant.month_end
+        ? month >= plant.month_start && month <= plant.month_end
+        : month >= plant.month_start || month <= plant.month_end)
+      : false;
+    const isPeak = peakMonths.includes(month);
+    const bg = !inRange ? "#e5e7eb" : isPeak ? "#1B4332" : "rgba(27,67,50,0.3)";
+    return `<span title="${m}" style="flex:1;height:20px;border-radius:3px;background:${bg};display:inline-block"></span>`;
+  }).join("");
+
+  const relatedSlugs = allPlants
+    .filter(p => p.category === plant.category && p.slug !== plant.slug)
+    .map(p => `<a href="/pylek/roslina/${p.slug}" style="color:#15803d;text-decoration:none;font-size:0.875rem">${p.icon} ${p.name_pl}</a>`)
+    .join(" · ");
+
+  const bodyHtml = `
+<main style="font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;padding:24px 16px">
+  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
+    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo;
+    <a href="/kalendarz-pylenia" style="color:#15803d">Kalendarz pylenia</a> &rsaquo;
+    ${plant.name_pl}
+  </nav>
+  <h1 style="font-size:1.875rem;font-weight:700;color:#111827;margin-bottom:4px">
+    ${plant.icon} ${plant.name_pl} — kiedy pyli i jak się chronić?
+  </h1>
+  <p style="color:#6b7280;font-style:italic;margin-bottom:16px">${plant.name_latin} · ${CATEGORY_LABELS[plant.category] ?? plant.category}</p>
+  <p style="color:#4b5563;margin-bottom:20px">${description}</p>
+  <h2 style="font-size:1.125rem;font-weight:600;margin-bottom:8px">Sezon pylenia ${plant.name_pl} w Polsce</h2>
+  <div style="display:flex;gap:3px;margin-bottom:6px;height:20px">${monthBar}</div>
+  <div style="display:flex;gap:10px;font-size:0.75rem;color:#6b7280;margin-bottom:20px">
+    <span><span style="display:inline-block;width:12px;height:8px;background:#1B4332;border-radius:2px;margin-right:4px"></span>Szczyt pylenia</span>
+    <span><span style="display:inline-block;width:12px;height:8px;background:rgba(27,67,50,0.3);border-radius:2px;margin-right:4px"></span>Pylenie</span>
+  </div>
+  ${relatedSlugs ? `<p style="color:#4b5563;font-size:0.875rem">Inne ${(CATEGORY_LABELS[plant.category] ?? "").toLowerCase()} pylące w Polsce: ${relatedSlugs}</p>` : ""}
+</main>`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description,
+    url: canonical,
+    about: { "@type": "Thing", name: plant.name_pl, alternateName: plant.name_latin },
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
+        { "@type": "ListItem", position: 2, name: "Kalendarz pylenia", item: "https://copyli.pl/kalendarz-pylenia" },
+        { "@type": "ListItem", position: 3, name: plant.name_pl, item: canonical },
+      ],
+    },
+  };
+
+  const html = injectMeta(template, { title, description, canonical, structuredData, bodyHtml });
+  const outDir = path.join(DIST, "pylek", "roslina");
+  ensureDir(outDir);
+  fs.writeFileSync(path.join(outDir, `${plant.slug}.html`), html);
+}
+
 // ─── Generowanie strony kalendarza ────────────────────────────────────────
 
 function generateCalendarPage(): void {
@@ -364,11 +449,17 @@ async function main() {
   generateCalendarPage();
   console.log(`  ✅ Wygenerowano stronę kalendarza`);
 
-  // Zaktualizuj _redirects — nie rewrite'uj podstron, które istnieją jako pliki
-  // Cloudflare Pages automatycznie preferuje pliki nad regułą /* /index.html 200
-  // Więc nie trzeba nic zmieniać w _redirects — wystarczy że pliki istnieją.
+  const plants = readJson<PlantRecord[]>(path.join(DATA, "plants.json"));
+  if (plants && plants.length > 0) {
+    console.log(`🌱 Pre-renderowanie ${plants.length} stron roślin...`);
+    for (const plant of plants) {
+      generatePlantPage(plant, plants);
+    }
+    console.log(`  ✅ Wygenerowano ${plants.length} stron roślin`);
+  }
 
-  console.log(`\n✅ Pre-renderowanie zakończone. ${cities.length + voivodeships.length + 1} plików HTML gotowych.`);
+  const plantCount = plants?.length ?? 0;
+  console.log(`\n✅ Pre-renderowanie zakończone. ${cities.length + voivodeships.length + 1 + plantCount} plików HTML gotowych.`);
 }
 
 main().catch(console.error);

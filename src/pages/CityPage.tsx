@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import CitySearch from "../components/CitySearch";
 import type { City, CityPageData } from "../types";
 import SEOHead from "../components/SEOHead";
 import PollenCard from "../components/PollenCard";
@@ -12,6 +13,7 @@ const PollenMap = lazy(() => import("../components/PollenMap"));
 
 export default function CityPage() {
   const { miasto } = useParams<{ miasto: string }>();
+  const navigate = useNavigate();
   const [city, setCity] = useState<City | null>(null);
   const [data, setData] = useState<CityPageData | null>(null);
   const [cities, setCities] = useState<City[]>([]);
@@ -155,6 +157,15 @@ export default function CityPage() {
                 <AirQualityCard aqi={wx.aqi} aqi_label={wx.aqi_label} temperature={wx.temperature} humidity={wx.humidity} wind_speed={wx.wind_speed} precipitation={wx.precipitation} />
               </div>
             )}
+
+            {/* Porównaj z innym miastem */}
+            <div className="card anim-slide-r delay-3" style={{ padding:"16px 18px" }}>
+              <p className="label" style={{ marginBottom:10 }}>Porównaj z innym miastem</p>
+              <CitySearch
+                compact
+                onSelect={c => navigate(`/porownaj/${city.slug}/${c.slug}`)}
+              />
+            </div>
 
             {nearbyCities.length > 0 && (
               <div className="card anim-slide-r delay-3" style={{ padding:"16px 18px" }}>

@@ -96,7 +96,10 @@ export default function CalendarPage() {
                       <div style={{ width: 140, flexShrink: 0, padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 18, lineHeight: 1 }}>{plant.icon}</span>
                         <div>
-                          <p style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3, margin: 0 }}>{plant.name_pl}</p>
+                          <Link to={`/pylek/roslina/${plant.slug}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3, margin: 0, textDecoration: "none", display: "block" }}
+                            onMouseEnter={e => (e.currentTarget.style.color = "var(--forest)")}
+                            onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
+                          >{plant.name_pl}</Link>
                           <p style={{ fontSize: 10, color: "var(--ink-3)", fontStyle: "italic", lineHeight: 1.3, margin: 0 }}>{plant.name_latin}</p>
                         </div>
                       </div>

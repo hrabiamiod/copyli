@@ -22,22 +22,25 @@ function url(loc: string, priority: string, changefreq: string): string {
 async function main() {
   const cities = JSON.parse(readFileSync(join(DATA_DIR, "cities.json"), "utf-8")) as Array<{ slug: string }>;
   const voivodeships = JSON.parse(readFileSync(join(DATA_DIR, "voivodeships.json"), "utf-8")) as Array<{ slug: string }>;
+  const plants = JSON.parse(readFileSync(join(DATA_DIR, "plants.json"), "utf-8")) as Array<{ slug: string }>;
 
   const cityUrls = cities.map(c => url(`/pylek/${c.slug}`, "0.8", "hourly")).join("\n");
   const voivUrls = voivodeships.map(v => url(`/pylek/woj/${v.slug}`, "0.7", "hourly")).join("\n");
+  const plantUrls = plants.map(p => url(`/pylek/roslina/${p.slug}`, "0.6", "monthly")).join("\n");
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${url("/", "1.0", "hourly")}
 ${url("/kalendarz-pylenia", "0.6", "monthly")}
 ${voivUrls}
+${plantUrls}
 ${cityUrls}
 </urlset>`;
 
   const outPath = join(process.cwd(), "public", "sitemap.xml");
   writeFileSync(outPath, sitemap, "utf-8");
   console.log(`Sitemap wygenerowany: ${outPath}`);
-  console.log(`Łącznie URL: ${2 + cities.length + voivodeships.length}`);
+  console.log(`Łącznie URL: ${2 + cities.length + voivodeships.length + plants.length}`);
 }
 
 main().catch(console.error);

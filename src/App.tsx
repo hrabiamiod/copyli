@@ -4,6 +4,8 @@ import HomePage from "./pages/HomePage";
 import CityPage from "./pages/CityPage";
 import VoivodeshipPage from "./pages/VoivodeshipPage";
 import CalendarPage from "./pages/CalendarPage";
+import PlantPage from "./pages/PlantPage";
+import ComparePage from "./pages/ComparePage";
 import GAPageTracker from "./components/GAPageTracker";
 
 export default function App() {
@@ -13,8 +15,11 @@ export default function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/pylek/:miasto" element={<CityPage />} />
+          {/* Musi być przed /pylek/:miasto żeby nie konfliktować */}
+          <Route path="/pylek/roslina/:roslina" element={<PlantPage />} />
           <Route path="/pylek/woj/:wojewodztwo" element={<VoivodeshipPage />} />
+          <Route path="/pylek/:miasto" element={<CityPage />} />
+          <Route path="/porownaj/:miasto1/:miasto2" element={<ComparePage />} />
           <Route path="/kalendarz-pylenia" element={<CalendarPage />} />
           <Route path="*" element={
             <div className="max-w-xl mx-auto px-4 py-16 text-center">
