@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Nav */}
           <nav className="hidden md:flex items-center ml-auto" style={{ gap: 2 }}>
-            {[{ to: "/", label: "Mapa" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }].map(({ to, label }) => (
+            {[{ to: "/", label: "Mapa" }, { to: "/pylek/rosliny", label: "Rośliny" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }].map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
@@ -129,7 +129,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               },
               {
                 title: "Informacje",
-                links: [["Kalendarz pylenia","kalendarz-pylenia"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
+                links: [["Rośliny pylące","pylek/rosliny"],["Kalendarz pylenia","kalendarz-pylenia"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
                 prefix: "/",
               },
             ].map(({ title, links, prefix }) => (

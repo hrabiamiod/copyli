@@ -163,9 +163,12 @@ export default function VoivodeshipPage() {
                     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                       {plants.map(plant => (
                         <div key={plant.plant_slug} style={{ display:"flex", alignItems:"center", gap:10 }}>
-                          <span style={{ fontSize:12, color:"var(--ink)", minWidth:100, flexShrink:0 }}>
+                          <Link to={`/pylek/roslina/${plant.plant_slug}`} style={{ fontSize:12, color:"var(--ink)", minWidth:100, flexShrink:0, textDecoration:"none" }}
+                            onMouseEnter={e => (e.currentTarget.style.color = "var(--forest)")}
+                            onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
+                          >
                             {plant.plant_name}
-                          </span>
+                          </Link>
                           <div style={{ flex:1, height:6, borderRadius:3, background:"var(--cream-dark)", overflow:"hidden" }}>
                             <div style={{
                               height:"100%",

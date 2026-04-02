@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { PollenData } from "../types";
 
 const CAT = { tree: "Drzewa", grass: "Trawy", weed: "Chwasty" };
@@ -58,9 +59,12 @@ export default function PollenCard({ data }: { data: PollenData[] }) {
                     <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                       <span style={{ fontSize: 19, lineHeight: 1 }}>{plant.icon}</span>
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.3 }}>
+                        <Link to={`/pylek/roslina/${plant.plant_slug}`} style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.3, textDecoration: "none", display: "block" }}
+                          onMouseEnter={e => (e.currentTarget.style.color = "var(--forest)")}
+                          onMouseLeave={e => (e.currentTarget.style.color = "var(--ink)")}
+                        >
                           {plant.plant_name}
-                        </p>
+                        </Link>
                         <p style={{ fontSize: 11, color: "var(--ink-3)", margin: 0, fontStyle: "italic" }}>
                           {plant.name_latin}
                         </p>

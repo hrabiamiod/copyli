@@ -6,6 +6,7 @@ import VoivodeshipPage from "./pages/VoivodeshipPage";
 import CalendarPage from "./pages/CalendarPage";
 import PlantPage from "./pages/PlantPage";
 import ComparePage from "./pages/ComparePage";
+import PlantsIndexPage from "./pages/PlantsIndexPage";
 import GAPageTracker from "./components/GAPageTracker";
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           {/* Musi być przed /pylek/:miasto żeby nie konfliktować */}
+          <Route path="/pylek/rosliny" element={<PlantsIndexPage />} />
           <Route path="/pylek/roslina/:roslina" element={<PlantPage />} />
           <Route path="/pylek/woj/:wojewodztwo" element={<VoivodeshipPage />} />
           <Route path="/pylek/:miasto" element={<CityPage />} />

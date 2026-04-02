@@ -419,6 +419,56 @@ function generateCalendarPage(): void {
   fs.writeFileSync(path.join(DIST, "kalendarz-pylenia.html"), html);
 }
 
+// ─── Generowanie strony indeksu roślin ────────────────────────────────────
+
+function generatePlantsIndexPage(plants: PlantRecord[]): void {
+  const title = "Rośliny pylące w Polsce — alergeny, sezony i opisy | CoPyli.pl";
+  const description = "Lista roślin pylących w Polsce: drzewa (brzoza, olcha, leszczyna), trawy i chwasty (ambrozja, bylica). Kiedy pylą, jak się chronić, reaktywność krzyżowa.";
+  const canonical = "https://copyli.pl/pylek/rosliny";
+
+  const cats: Record<string, string> = { tree: "Drzewa", grass: "Trawy", weed: "Chwasty" };
+  const plantLinks = (["tree","grass","weed"] as const).map(cat => {
+    const items = plants.filter(p => p.category === cat);
+    if (!items.length) return "";
+    const links = items.map(p =>
+      `<a href="/pylek/roslina/${p.slug}" style="color:#15803d;text-decoration:none;font-size:0.875rem">${p.icon} ${p.name_pl}</a>`
+    ).join(" · ");
+    return `<p style="margin-bottom:6px"><strong>${cats[cat]}:</strong> ${links}</p>`;
+  }).join("");
+
+  const bodyHtml = `
+<main style="font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;padding:24px 16px">
+  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
+    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo; Rośliny pylące
+  </nav>
+  <h1 style="font-size:1.875rem;font-weight:700;color:#111827;margin-bottom:8px">
+    Rośliny pylące w Polsce
+  </h1>
+  <p style="color:#4b5563;margin-bottom:20px">${description}</p>
+  ${plantLinks}
+</main>`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    description,
+    url: canonical,
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
+        { "@type": "ListItem", position: 2, name: "Rośliny pylące", item: canonical },
+      ],
+    },
+  };
+
+  const html = injectMeta(template, { title, description, canonical, structuredData, bodyHtml });
+  const outDir = path.join(DIST, "pylek");
+  ensureDir(outDir);
+  fs.writeFileSync(path.join(outDir, "rosliny.html"), html);
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -451,11 +501,12 @@ async function main() {
 
   const plants = readJson<PlantRecord[]>(path.join(DATA, "plants.json"));
   if (plants && plants.length > 0) {
-    console.log(`🌱 Pre-renderowanie ${plants.length} stron roślin...`);
+    console.log(`🌱 Pre-renderowanie ${plants.length} stron roślin + indeks...`);
     for (const plant of plants) {
       generatePlantPage(plant, plants);
     }
-    console.log(`  ✅ Wygenerowano ${plants.length} stron roślin`);
+    generatePlantsIndexPage(plants);
+    console.log(`  ✅ Wygenerowano ${plants.length} stron roślin + indeks`);
   }
 
   const plantCount = plants?.length ?? 0;

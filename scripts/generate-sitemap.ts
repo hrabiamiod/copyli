@@ -32,6 +32,7 @@ async function main() {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${url("/", "1.0", "hourly")}
 ${url("/kalendarz-pylenia", "0.6", "monthly")}
+${url("/pylek/rosliny", "0.7", "monthly")}
 ${voivUrls}
 ${plantUrls}
 ${cityUrls}
