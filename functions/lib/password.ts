@@ -1,8 +1,7 @@
 // PBKDF2-SHA256 password hashing
-// Iterations: 310 000 (OWASP 2023 recommendation)
-// Workers crypto API uses hardware acceleration — dziala w ramach CPU limit
+// Iterations: 100 000 (Cloudflare Workers limit — max supported value)
 
-const ITERATIONS = 310_000;
+const ITERATIONS = 100_000;
 
 function bufToHex(buf: ArrayBuffer): string {
   return Array.from(new Uint8Array(buf))
