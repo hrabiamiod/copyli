@@ -22,10 +22,11 @@ async function _handleRegister(request: Request, env: Env, cors: Record<string, 
 
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
-  const rateLimit = await checkRateLimit(env.KV, `register:${ip}`, 10, 3600);
-  if (!rateLimit.allowed) {
-    return json({ error: 'Zbyt wiele prob rejestracji. Sprobuj za godzine.' }, 429, cors);
-  }
+  // Rate limit — wlacz po zakonczeniu testow (odkomentuj ponizsze)
+  // const rateLimit = await checkRateLimit(env.KV, `register:${ip}`, 10, 3600);
+  // if (!rateLimit.allowed) {
+  //   return json({ error: 'Zbyt wiele prob rejestracji. Sprobuj za godzine.' }, 429, cors);
+  // }
 
   let body: { email?: unknown; password?: unknown; name?: unknown; consents?: Record<string, boolean> };
   try {
