@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CitySearch from "./CitySearch";
+import UserMenu from "./UserMenu";
 
 const LogoIcon = () => (
   <svg width="15" height="14" viewBox="0 0 48 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -62,7 +63,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           )}
 
           {/* Nav */}
-          <nav className="hidden md:flex items-center ml-auto" style={{ gap: 2 }}>
+          <nav className="hidden md:flex items-center" style={{ gap: 2 }}>
             {[{ to: "/", label: "Mapa" }, { to: "/pylek/rosliny", label: "Rośliny" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }].map(({ to, label }) => (
               <Link
                 key={to}
@@ -89,6 +90,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
+
+          {/* User menu / login button */}
+          <UserMenu />
         </div>
       </header>
 

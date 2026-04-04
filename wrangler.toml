@@ -8,9 +8,21 @@ binding = "DB"
 database_name = "copyli-db"
 database_id = "973341c4-e03d-4128-b819-230ea045b4ed"
 
+# KV Namespace do rate limitingu i cache auth
+# Utworz: wrangler kv namespace create "COPYLI_AUTH"
+# Nastepnie wpisz zwrocone id ponizej
+[[kv_namespaces]]
+binding = "KV"
+id = "ca1a278f189c49f59e5d4a42b5301e9e"
+
 [vars]
 ENVIRONMENT = "production"
+APP_URL = "https://copyli.pl"
 
-# Opcjonalne klucze API (sekret przez: wrangler secret put AMBEE_API_KEY)
-# AMBEE_API_KEY = ""
-# GOOGLE_POLLEN_API_KEY = ""
+# Sekrety (ustaw przez: wrangler secret put NAZWA)
+# JWT_SECRET          — 64-bajtowy losowy klucz (openssl rand -base64 64)
+# GOOGLE_CLIENT_ID    — Google OAuth 2.0 Client ID
+# GOOGLE_CLIENT_SECRET — Google OAuth 2.0 Client Secret
+# RESEND_API_KEY      — klucz API Resend (wysylka maili)
+# AMBEE_API_KEY       — (opcjonalne) Ambee Pollen API
+# GOOGLE_POLLEN_API_KEY — (opcjonalne) Google Pollen API
