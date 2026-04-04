@@ -10,11 +10,16 @@ interface RateLimitState {
 }
 
 export async function checkRateLimit(
-  kv: KVNamespace,
+  kv: KVNamespace | undefined,
   key: string,
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
+  // Jesli KV nie jest skonfigurowane — przepusc (rate limiting niedostepny)
+  if (!kv) {
+    return { allowed: true, remaining: limit, resetAt: Date.now() + windowSeconds * 1000 };
+  }
+
   const now = Date.now();
   const kvKey = `rl:${key}`;
 
