@@ -12,6 +12,15 @@ const LOCKOUT_MINUTES = 15;
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const origin = request.headers.get('Origin');
   const cors = corsHeaders(origin);
+  try {
+    return await _handleLogin(request, env, cors);
+  } catch (err) {
+    console.error('[login] uncaught error:', err);
+    return json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie.' }, 500, cors);
+  }
+};
+
+async function _handleLogin(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
 
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
@@ -130,7 +139,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     200,
     responseHeaders
   );
-};
+}
 
 export const onRequestOptions: PagesFunction<Env> = async ({ request }) => {
   return new Response(null, { status: 204, headers: corsHeaders(request.headers.get('Origin')) });

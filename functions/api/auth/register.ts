@@ -10,6 +10,15 @@ const REFRESH_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 dni
 export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const origin = request.headers.get('Origin');
   const cors = corsHeaders(origin);
+  try {
+  return await _handleRegister(request, env, cors);
+  } catch (err) {
+    console.error('[register] uncaught error:', err);
+    return json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie.' }, 500, cors);
+  }
+};
+
+async function _handleRegister(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
 
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
@@ -115,7 +124,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     201,
     responseHeaders
   );
-};
+}
 
 export const onRequestOptions: PagesFunction<Env> = async ({ request }) => {
   return new Response(null, { status: 204, headers: corsHeaders(request.headers.get('Origin')) });
