@@ -181,14 +181,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     : `${appUrl}/`;
 
   // Ustaw refresh cookie + wyczysc oauth_state, przekieruj
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: redirectUrl,
-      'Set-Cookie': [
-        `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=${REFRESH_TTL_SECONDS}`,
-        'oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=0',
-      ].join(', '),
-    },
-  });
+  const resHeaders = new Headers({ Location: redirectUrl });
+  resHeaders.append('Set-Cookie', `refresh_token=${refreshToken}; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=${REFRESH_TTL_SECONDS}`);
+  resHeaders.append('Set-Cookie', 'oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/api/auth; Max-Age=0');
+  return new Response(null, { status: 302, headers: resHeaders });
 };
