@@ -62,6 +62,10 @@ export default function SettingsPage() {
   const [notif, setNotif] = useState<NotificationSettings>({ email_alerts: false, alert_threshold: 'high', alert_time: '07:00' });
   const [loading, setLoading] = useState(true);
 
+  // Weryfikacja email
+  const [resendingVerif, setResendingVerif] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+
   // Zmiana nazwy
   const [name, setName] = useState('');
   const [nameSaving, setNameSaving] = useState(false);
@@ -92,6 +96,16 @@ export default function SettingsPage() {
       setNotif(notifData);
     }).finally(() => setLoading(false));
   }, []);
+
+  const resendVerification = async () => {
+    setResendingVerif(true); setResendMsg('');
+    try {
+      await apiFetch('/api/auth/resend-verification', { method: 'POST' });
+      setResendMsg('Wysłano! Sprawdź skrzynkę.');
+    } catch (e: unknown) {
+      setResendMsg((e as Error).message ?? 'Błąd wysyłki');
+    } finally { setResendingVerif(false); }
+  };
 
   const saveName = async () => {
     setNameSaving(true); setNameMsg('');
@@ -186,10 +200,20 @@ export default function SettingsPage() {
         {/* ─── KONTO ─── */}
         <Section title="Konto">
           <Field label="Email">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, color: 'var(--ink)' }}>{me?.email}</span>
               <StatusBadge ok={!!me?.email_verified} label={me?.email_verified ? 'Zweryfikowany' : 'Niezweryfikowany'} />
+              {!me?.email_verified && (
+                <button
+                  onClick={resendVerification}
+                  disabled={resendingVerif}
+                  style={{ fontSize: 12, fontWeight: 600, color: 'var(--forest)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                >
+                  {resendingVerif ? 'Wysyłanie…' : 'Wyślij ponownie'}
+                </button>
+              )}
             </div>
+            {resendMsg && <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--forest)', textAlign: 'right' }}>{resendMsg}</p>}
           </Field>
 
           <div style={{ marginBottom: 14 }}>
