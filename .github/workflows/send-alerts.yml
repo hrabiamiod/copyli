@@ -30,7 +30,10 @@ jobs:
         run: npm ci
 
       - name: Send pollen alerts
-        run: npx tsx scripts/send-alerts.ts ${{ inputs.force == 'true' && '--force' || '' }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.force }}" = "true" ]; then ARGS="--force"; fi
+          npx tsx scripts/send-alerts.ts $ARGS
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
