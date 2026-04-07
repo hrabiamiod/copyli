@@ -16,6 +16,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ProfilePage from "./pages/ProfilePage";
 import DiaryPage from "./pages/DiaryPage";
+import SettingsPage from "./pages/SettingsPage";
 import GAPageTracker from "./components/GAPageTracker";
 
 export default function App() {
@@ -37,7 +38,7 @@ export default function App() {
             {/* Auth — chronione (placeholder do Fazy 4) */}
             <Route path="/profil" element={<AuthGuard><ProfilePage /></AuthGuard>} />
             <Route path="/dziennik" element={<AuthGuard><DiaryPage /></AuthGuard>} />
-            <Route path="/ustawienia" element={<AuthGuard><div style={{ padding: 40, textAlign: 'center' }}><p style={{ fontSize: 32 }}>⚙️</p><h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--forest)' }}>Ustawienia</h1><p style={{ color: 'var(--ink-2)' }}>Wkrótce — zarządzanie kontem i prywatnością.</p></div></AuthGuard>} />
+            <Route path="/ustawienia" element={<AuthGuard><SettingsPage /></AuthGuard>} />
 
             {/* Mapa i treści */}
             <Route path="/pylek/rosliny" element={<PlantsIndexPage />} />
