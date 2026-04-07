@@ -1,7 +1,8 @@
 import { hashPassword } from '../../lib/password.ts';
-import { generateId, generateRefreshToken, hashToken, createAccessToken } from '../../lib/tokens.ts';
+import { generateId, generateRefreshToken, hashToken, createAccessToken, generateEmailToken } from '../../lib/tokens.ts';
 import { isValidEmail, validatePassword, sanitizeString } from '../../lib/validation.ts';
 import { checkRateLimit } from '../../lib/rate-limit.ts';
+import { sendVerificationEmail } from '../../lib/email.ts';
 import { json, corsHeaders } from '../../lib/response.ts';
 import type { Env } from '../../lib/types.ts';
 
@@ -98,6 +99,31 @@ async function _handleRegister(request: Request, env: Env, cors: Record<string, 
     INSERT INTO refresh_tokens (user_id, token_hash, device_info, ip_address, expires_at, created_at, last_used_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).bind(userId, refreshHash, request.headers.get('User-Agent') ?? '', ip, refreshExpires, now, now).run();
+
+  // Wyślij email weryfikacyjny (nieblokujące — konto już istnieje)
+  const emailToken = generateEmailToken();
+  const emailTokenHash = await hashToken(emailToken);
+  const emailTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+  await env.DB.prepare(`
+    INSERT INTO email_tokens (user_id, token_hash, type, expires_at, created_at)
+    VALUES (?, ?, 'verify_email', ?, ?)
+  `).bind(userId, emailTokenHash, emailTokenExpires, now).run();
+
+  if (env.RESEND_API_KEY) {
+    try {
+      await sendVerificationEmail(
+        env.RESEND_API_KEY,
+        normalizedEmail,
+        sanitizedName,
+        emailToken,
+        env.APP_URL ?? 'https://copyli.pl'
+      );
+    } catch (e) {
+      console.error('[register] sendVerificationEmail error:', (e as Error).message);
+      // Nie przerywamy — konto zostało utworzone
+    }
+  }
 
   const isMobile = request.headers.get('X-Copyli-Client') === 'mobile';
   const responseHeaders: Record<string, string> = { ...cors };
