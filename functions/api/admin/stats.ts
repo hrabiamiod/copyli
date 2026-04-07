@@ -2,6 +2,22 @@ import { requireAdmin, AuthError } from '../../lib/auth.ts';
 import { json, corsHeaders } from '../../lib/response.ts';
 import type { Env } from '../../lib/types.ts';
 
+interface CFIncoming {
+  colo?: string;
+  country?: string;
+  city?: string;
+  region?: string;
+  httpProtocol?: string;
+  tlsVersion?: string;
+  tlsCipher?: string;
+  asn?: number;
+  asOrganization?: string;
+  latitude?: string;
+  longitude?: string;
+  timezone?: string;
+  botManagement?: { score?: number; verifiedBot?: boolean };
+}
+
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const origin = request.headers.get('Origin');
   const cors = corsHeaders(origin);
@@ -12,6 +28,26 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     return Promise.reject(e);
   }
   void authUser;
+
+  const cf = (request as Request & { cf?: CFIncoming }).cf ?? {};
+  const runtime = {
+    colo: cf.colo ?? '—',
+    country: cf.country ?? '—',
+    city: cf.city ?? '—',
+    region: cf.region ?? '—',
+    asn: cf.asn ?? null,
+    asOrganization: cf.asOrganization ?? '—',
+    httpProtocol: cf.httpProtocol ?? '—',
+    tlsVersion: cf.tlsVersion ?? '—',
+    tlsCipher: cf.tlsCipher ?? '—',
+    timezone: cf.timezone ?? '—',
+    latitude: cf.latitude ?? null,
+    longitude: cf.longitude ?? null,
+    botScore: cf.botManagement?.score ?? null,
+    verifiedBot: cf.botManagement?.verifiedBot ?? false,
+    workersRuntime: (typeof navigator !== 'undefined' ? navigator.userAgent : null) ?? '—',
+    servedAt: new Date().toISOString(),
+  };
 
   const [
     usersRow,
@@ -81,6 +117,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     recent_users: recentUsers.results ?? [],
     top_allergens: topAllergens.results ?? [],
     registrations_by_day: regByDay.results ?? [],
+    runtime,
   }, 200, cors);
 };
 

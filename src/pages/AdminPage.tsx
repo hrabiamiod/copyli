@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import SEOHead from '../components/SEOHead';
 
+interface CFRuntime {
+  colo: string; country: string; city: string; region: string;
+  asn: number | null; asOrganization: string;
+  httpProtocol: string; tlsVersion: string; tlsCipher: string;
+  timezone: string; latitude: string | null; longitude: string | null;
+  botScore: number | null; verifiedBot: boolean;
+  workersRuntime: string; servedAt: string;
+}
+
 interface AdminStats {
   users: { total: number; verified: number; last_7_days: number };
   allergens: number;
@@ -14,6 +23,7 @@ interface AdminStats {
   recent_users: Array<{ id: string; email: string; email_verified: number; created_at: string; allergens_count: number; locations_count: number }>;
   top_allergens: Array<{ name_pl: string; icon: string; count: number }>;
   registrations_by_day: Array<{ date: string; count: number }>;
+  runtime: CFRuntime;
 }
 
 function StatCard({ label, value, sub, color = 'var(--forest)' }: { label: string; value: string | number; sub?: string; color?: string }) {
@@ -138,6 +148,33 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* Cloudflare Runtime */}
+        {s.runtime && (
+          <div style={{ background: 'var(--surface)', borderRadius: 12, padding: '18px 20px', boxShadow: 'var(--s-card)', marginBottom: 16 }}>
+            <p style={{ margin: '0 0 14px', fontSize: 12, fontWeight: 700, color: 'var(--ink-2)' }}>
+              ☁️ Cloudflare Edge — żądanie obsłużone przez
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px 20px' }}>
+              {[
+                ['Data center', `${s.runtime.colo} (${s.runtime.country})`],
+                ['Miasto', `${s.runtime.city}, ${s.runtime.region}`],
+                ['AS', s.runtime.asOrganization ? `AS${s.runtime.asn} ${s.runtime.asOrganization}` : '—'],
+                ['Protokół', s.runtime.httpProtocol],
+                ['TLS', `${s.runtime.tlsVersion} · ${s.runtime.tlsCipher}`],
+                ['Strefa czasowa', s.runtime.timezone],
+                ['Bot score', s.runtime.botScore !== null ? `${s.runtime.botScore}/100${s.runtime.verifiedBot ? ' ✓ verified' : ''}` : '—'],
+                ['Workers runtime', s.runtime.workersRuntime.replace('Cloudflare-Workers/', 'CF-Workers/')],
+                ['Serwowano o', new Date(s.runtime.servedAt).toLocaleTimeString('pl-PL')],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p style={{ margin: '0 0 1px', fontSize: 10, fontWeight: 600, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--ink)', fontFamily: value?.includes('CF-Workers') || value?.includes('TLS') ? 'monospace' : 'inherit' }}>{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Ostatnie rejestracje */}
         <div style={{ background: 'var(--surface)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--s-card)' }}>
