@@ -17,6 +17,10 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ProfilePage from "./pages/ProfilePage";
 import DiaryPage from "./pages/DiaryPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminPage from "./pages/AdminPage";
+import AdminMfaPage from "./pages/AdminMfaPage";
+import AdminMfaSetupPage from "./pages/AdminMfaSetupPage";
+import AdminGuard from "./components/AdminGuard";
 import GAPageTracker from "./components/GAPageTracker";
 
 export default function App() {
@@ -39,6 +43,9 @@ export default function App() {
             <Route path="/profil" element={<AuthGuard><ProfilePage /></AuthGuard>} />
             <Route path="/dziennik" element={<AuthGuard><DiaryPage /></AuthGuard>} />
             <Route path="/ustawienia" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+            <Route path="/admin" element={<AdminGuard><AdminPage /></AdminGuard>} />
+            <Route path="/admin/mfa" element={<AdminGuard><AdminMfaPage /></AdminGuard>} />
+            <Route path="/admin/mfa-setup" element={<AdminGuard><AdminMfaSetupPage /></AdminGuard>} />
 
             {/* Mapa i treści */}
             <Route path="/pylek/rosliny" element={<PlantsIndexPage />} />

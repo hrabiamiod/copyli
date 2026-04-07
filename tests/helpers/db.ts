@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS users (
     avatar_url TEXT,
     failed_login_count INTEGER DEFAULT 0,
     locked_until TEXT,
+    is_admin INTEGER DEFAULT 0,
+    totp_secret TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     deleted_at TEXT
@@ -114,6 +116,17 @@ CREATE TABLE IF NOT EXISTS auth_audit_log (
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS pollen_current (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    city_id INTEGER NOT NULL,
+    plant_id INTEGER NOT NULL,
+    concentration REAL,
+    level TEXT,
+    source TEXT,
+    measured_at TEXT,
+    updated_at TEXT
+);
+
 CREATE TABLE IF NOT EXISTS user_notification_settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
@@ -175,6 +188,9 @@ export function createMockD1() {
         // bez .bind() — dla prostych zapytań
         ...makeBoundStatement(sql, []),
       };
+    },
+    async batch(statements: ReturnType<typeof makeBoundStatement>[]) {
+      return Promise.all(statements.map(s => s.all()));
     },
     /** Bezpośredni dostęp do SQLite (do seedowania w testach) */
     _sqlite: sqlite,

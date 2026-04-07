@@ -11,6 +11,25 @@ export class AuthError extends Error {
   }
 }
 
+export async function requireAdmin(
+  request: Request,
+  env: Env
+): Promise<JWTPayload> {
+  const authUser = await requireAuth(request, env);
+
+  const user = await env.DB.prepare(
+    'SELECT is_admin FROM users WHERE id = ? AND deleted_at IS NULL'
+  ).bind(authUser.sub).first<{ is_admin: number }>();
+
+  if (!user?.is_admin) throw new AuthError('Brak dostępu', 403);
+
+  if (!env.KV) throw new AuthError('KV niedostępne', 500);
+  const mfaOk = await env.KV.get(`mfa:${authUser.sub}`);
+  if (!mfaOk) throw new AuthError('mfa_required', 403);
+
+  return authUser;
+}
+
 export async function requireAuth(request: Request, env: Env): Promise<JWTPayload> {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
