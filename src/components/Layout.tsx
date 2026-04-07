@@ -24,8 +24,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div style={{ minHeight: "100svh", display: "flex", flexDirection: "column", background: "var(--cream)" }}>
 
       <header
-        className="sticky top-0 z-50"
+        className="sticky top-0"
         style={{
+          zIndex: 900,
           height: 52,
           background: scrolled ? "rgba(247,242,235,0.88)" : "rgba(247,242,235,0.96)",
           backdropFilter: "blur(24px) saturate(1.6)",
