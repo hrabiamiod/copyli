@@ -178,11 +178,13 @@ async function fetchWeather(lat: number, lon: number): Promise<Record<string, (n
 
 async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
   const now = new Date().toISOString();
+  const todayStr = now.substring(0, 10);
 
   // Zbieramy VALUES z całego batchu — potem jeden INSERT per tabela
   const currentRows: string[] = [];
   const forecastRows: string[] = [];
   const weatherRows: string[] = [];
+  const historyRows: string[] = [];
 
   const promises = cities.map(async (city) => {
     const [data, weather] = await Promise.all([
@@ -213,6 +215,13 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
         `(${city.id}, ${plant.id}, ${currentConc}, '${currentLevel}', 'open-meteo', '${measuredAt}', '${now}')`
       );
 
+      // Historia — dzienna średnia dla kalendarza pylenia
+      const todayAvg = getDayAverage(values as (number | null)[], times, todayStr);
+      const todayLevel = getLevel(todayAvg, plant);
+      historyRows.push(
+        `(${city.id}, ${plant.id}, '${todayStr}', ${todayAvg.toFixed(2)}, '${todayLevel}')`
+      );
+
       for (let day = 1; day <= FORECAST_DAYS; day++) {
         const forecastDate = new Date();
         forecastDate.setDate(forecastDate.getDate() + day);
@@ -240,11 +249,12 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
 
   await Promise.all(promises);
 
-  // 3 zapytania na cały batch miast zamiast ~310 pojedynczych
+  // 4 zapytania na cały batch miast zamiast ~310 pojedynczych
   await Promise.all([
     d1MultiInsert("weather_current", "city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at", weatherRows),
     d1MultiInsert("pollen_current", "city_id, plant_id, concentration, level, source, measured_at, updated_at", currentRows),
     d1MultiInsert("pollen_forecast", "city_id, plant_id, forecast_date, concentration, level, updated_at", forecastRows),
+    d1MultiInsert("pollen_history", "city_id, plant_id, date, concentration, level", historyRows),
   ]);
 }
 

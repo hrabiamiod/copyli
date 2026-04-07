@@ -133,6 +133,82 @@ export async function sendPasswordResetEmail(
   });
 }
 
+const LEVEL_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  low:      { label: 'Niskie',          color: '#2D6A4F', bg: 'rgba(82,183,136,0.15)' },
+  medium:   { label: 'Średnie',         color: '#7B4F1A', bg: 'rgba(201,144,58,0.18)' },
+  high:     { label: 'Wysokie',         color: '#C1421F', bg: 'rgba(193,66,31,0.15)' },
+  very_high:{ label: 'Bardzo wysokie',  color: '#7B0000', bg: 'rgba(180,0,0,0.14)' },
+};
+
+export interface AlertPlant {
+  name_pl: string;
+  icon: string;
+  level: string;
+}
+
+export async function sendPollenAlertEmail(
+  apiKey: string,
+  to: string,
+  name: string | null,
+  cityName: string,
+  alertPlants: AlertPlant[]
+): Promise<boolean> {
+  const greeting = name ? `Cześć ${name}` : 'Cześć';
+  const plantsHtml = alertPlants.map(p => {
+    const ll = LEVEL_LABELS[p.level] ?? LEVEL_LABELS.medium;
+    return `<tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:15px">${p.icon} ${p.name_pl}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;text-align:right">
+        <span style="background:${ll.bg};color:${ll.color};font-weight:700;font-size:12px;padding:3px 10px;border-radius:20px">${ll.label}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  return sendEmail(apiKey, {
+    to,
+    subject: `Alerty pyłkowe — ${cityName} · CoPyli`,
+    html: `
+<!DOCTYPE html>
+<html lang="pl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f4f0;font-family:system-ui,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 16px">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden">
+        <tr><td style="background:#2d6a4f;padding:32px 40px;text-align:center">
+          <span style="font-size:28px">🌿</span>
+          <h1 style="margin:8px 0 0;color:#fff;font-size:22px;font-weight:700">CoPyli</h1>
+          <p style="margin:4px 0 0;color:#95d5b2;font-size:13px">Alert pyłkowy · ${cityName}</p>
+        </td></tr>
+        <tr><td style="padding:40px">
+          <h2 style="margin:0 0 8px;color:#1b4332;font-size:20px">${greeting}!</h2>
+          <p style="margin:0 0 24px;color:#374151;line-height:1.6">
+            Dziś w <strong>${cityName}</strong> stężenie pyłków Twoich alergenów przekracza ustawiony próg:
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${plantsHtml}
+          </table>
+          <div style="text-align:center;margin:32px 0">
+            <a href="https://copyli.pl" style="background:#2d6a4f;color:#fff;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px;display:inline-block">
+              Sprawdź szczegóły na CoPyli
+            </a>
+          </div>
+          <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.5">
+            Możesz zmienić ustawienia alertów na stronie
+            <a href="https://copyli.pl/ustawienia" style="color:#2d6a4f">ustawień konta</a>.
+          </p>
+        </td></tr>
+        <tr><td style="background:#f9fafb;padding:20px 40px;text-align:center;border-top:1px solid #e5e7eb">
+          <p style="margin:0;color:#9ca3af;font-size:12px">© 2026 CoPyli.pl — Mapa pylenia dla alergików</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 export async function sendPasswordChangedEmail(
   apiKey: string,
   to: string,

@@ -1,8 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import type { City, MapData, MetaData, Plant } from "../types";
+import type { City, MapData, MetaData, Plant, PollenData } from "../types";
 import SEOHead from "../components/SEOHead";
 import CitySearch from "../components/CitySearch";
 import { getStructuredDataFAQ } from "../utils/seo";
+import { useAuth } from "../context/AuthContext";
+import { apiFetch } from "../lib/api";
 
 const PollenMap = lazy(() => import("../components/PollenMap"));
 
@@ -36,13 +38,30 @@ const FAQ = [
   },
 ];
 
+interface UserAllergen { plant_slug: string; plant_name: string; icon: string; severity: string }
+interface UserLocation { city_id: number; city_slug: string; city_name: string; is_primary: boolean }
+
+const LEVEL_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  none:      { bg: 'rgba(24,24,15,0.06)',    text: 'var(--ink-3)',  label: 'Brak' },
+  low:       { bg: 'rgba(82,183,136,0.15)',  text: '#2D6A4F',       label: 'Niskie' },
+  medium:    { bg: 'rgba(201,144,58,0.18)',  text: '#7B4F1A',       label: 'Średnie' },
+  high:      { bg: 'rgba(193,66,31,0.15)',   text: '#C1421F',       label: 'Wysokie' },
+  very_high: { bg: 'rgba(180,0,0,0.14)',     text: '#7B0000',       label: 'Bardzo wysokie' },
+};
+
 export default function HomePage() {
+  const { isAuthenticated } = useAuth();
   const [cities, setCities] = useState<City[]>([]);
   const [mapData, setMapData] = useState<MapData[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [meta, setMeta] = useState<MetaData | null>(null);
   const [cityLevels, setCityLevels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+
+  // Dane spersonalizowane
+  const [myAllergens, setMyAllergens] = useState<UserAllergen[]>([]);
+  const [myCity, setMyCity] = useState<UserLocation | null>(null);
+  const [myPollen, setMyPollen] = useState<PollenData[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -56,6 +75,28 @@ export default function HomePage() {
       setLoading(false);
     });
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    Promise.all([
+      apiFetch('/api/user/allergens').then(r => r.json()) as Promise<UserAllergen[]>,
+      apiFetch('/api/user/locations').then(r => r.json()) as Promise<UserLocation[]>,
+    ]).then(([allergens, locations]) => {
+      if (!allergens.length) return;
+      setMyAllergens(allergens);
+      const primary = locations.find(l => l.is_primary) ?? locations[0] ?? null;
+      setMyCity(primary ?? null);
+      if (primary) {
+        fetch(`/data/cities/${primary.city_slug}.json`)
+          .then(r => r.ok ? r.json() : null)
+          .then((d: { pollen?: PollenData[] } | null) => {
+            if (!d?.pollen) return;
+            const slugs = new Set(allergens.map(a => a.plant_slug));
+            setMyPollen(d.pollen.filter(p => slugs.has(p.plant_slug)));
+          }).catch(() => {});
+      }
+    }).catch(() => {});
+  }, [isAuthenticated]);
 
   const updatedAt = meta?.updated_at
     ? new Date(meta.updated_at).toLocaleString("pl-PL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
@@ -279,6 +320,67 @@ export default function HomePage() {
                 {p.icon} {p.name_pl}
               </span>
             ))}
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════════════════════════════
+          TWOJE ALERGENY DZIŚ — personalizacja
+      ══════════════════════════════════════════════════════ */}
+      {isAuthenticated && myAllergens.length > 0 && myCity && (
+        <section style={{ padding: "28px 16px 8px", background: "var(--surface)" }}>
+          <div className="max-w-3xl mx-auto">
+            <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
+              <p className="label">Twoje alergeny dziś</p>
+              <a
+                href={`/pylek/${myCity.city_slug}`}
+                style={{ fontSize: 12, color: "var(--forest)", textDecoration: "none", fontWeight: 600 }}
+              >
+                {myCity.city_name} →
+              </a>
+            </div>
+
+            {myPollen.length === 0 ? (
+              <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 16 }}>
+                Ładowanie danych…
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {myPollen.map(p => {
+                  const lc = LEVEL_COLORS[p.level] ?? LEVEL_COLORS.none;
+                  return (
+                    <a
+                      key={p.plant_slug}
+                      href={`/pylek/${myCity.city_slug}`}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 8,
+                        padding: "8px 14px", borderRadius: "var(--r-pill)",
+                        background: lc.bg, textDecoration: "none",
+                        border: `1px solid ${lc.text}22`,
+                        transition: "transform 0.15s",
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
+                      onMouseLeave={e => (e.currentTarget.style.transform = "")}
+                    >
+                      <span style={{ fontSize: 16 }}>{p.icon}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{p.plant_name}</span>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, color: lc.text,
+                        background: `${lc.text}18`, padding: "2px 7px", borderRadius: 99,
+                      }}>
+                        {lc.label}
+                      </span>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+
+            {myAllergens.some(a => !myPollen.find(p => p.plant_slug === a.plant_slug)) && myPollen.length > 0 && (
+              <p style={{ fontSize: 11, color: "var(--ink-3)", marginBottom: 16 }}>
+                Pozostałe Twoje alergeny nie pylą dziś w tym regionie.
+              </p>
+            )}
           </div>
         </section>
       )}
