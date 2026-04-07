@@ -132,15 +132,14 @@ async function main() {
     const cityName = (cityRows[0]?.name as string) ?? 'Twoim mieście';
 
     // Wyślij email
-    const ok = await sendPollenAlertEmail(
-      resendKey,
-      user.email as string,
-      (user.display_name as string | null),
-      cityName,
-      alertPlants
-    );
-
-    if (ok) {
+    try {
+      await sendPollenAlertEmail(
+        resendKey,
+        user.email as string,
+        (user.display_name as string | null),
+        cityName,
+        alertPlants
+      );
       // Zapisz w audit log (deduplication)
       await d1Query(
         `INSERT INTO auth_audit_log (user_id, action, ip_address, created_at)
@@ -149,8 +148,8 @@ async function main() {
       );
       console.log(`✓ Alert → ${user.email} | ${cityName} | ${alertPlants.map(p => p.name_pl).join(', ')}`);
       sent++;
-    } else {
-      console.warn(`✗ Błąd wysyłki → ${user.email}`);
+    } catch (e) {
+      console.warn(`✗ Błąd wysyłki → ${user.email}: ${(e as Error).message}`);
     }
   }
 

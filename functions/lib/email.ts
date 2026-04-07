@@ -10,19 +10,18 @@ interface SendEmailOptions {
   html: string;
 }
 
-async function sendEmail(apiKey: string, opts: SendEmailOptions): Promise<boolean> {
-  try {
-    const res = await fetch(RESEND_API, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from: FROM, to: [opts.to], subject: opts.subject, html: opts.html }),
-    });
-    return res.ok;
-  } catch {
-    return false;
+async function sendEmail(apiKey: string, opts: SendEmailOptions): Promise<void> {
+  const res = await fetch(RESEND_API, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from: FROM, to: [opts.to], subject: opts.subject, html: opts.html }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '(no body)');
+    throw new Error(`Resend ${res.status}: ${body}`);
   }
 }
 
@@ -32,7 +31,7 @@ export async function sendVerificationEmail(
   name: string | null,
   token: string,
   appUrl: string
-): Promise<boolean> {
+): Promise<void> {
   const link = `${appUrl}/weryfikacja-email?token=${token}`;
   const greeting = name ? `Cześć ${name}` : 'Cześć';
 
@@ -86,7 +85,7 @@ export async function sendPasswordResetEmail(
   name: string | null,
   token: string,
   appUrl: string
-): Promise<boolean> {
+): Promise<void> {
   const link = `${appUrl}/resetuj-haslo?token=${token}`;
   const greeting = name ? `Cześć ${name}` : 'Cześć';
 
@@ -152,7 +151,7 @@ export async function sendPollenAlertEmail(
   name: string | null,
   cityName: string,
   alertPlants: AlertPlant[]
-): Promise<boolean> {
+): Promise<void> {
   const greeting = name ? `Cześć ${name}` : 'Cześć';
   const plantsHtml = alertPlants.map(p => {
     const ll = LEVEL_LABELS[p.level] ?? LEVEL_LABELS.medium;
@@ -213,7 +212,7 @@ export async function sendPasswordChangedEmail(
   apiKey: string,
   to: string,
   name: string | null
-): Promise<boolean> {
+): Promise<void> {
   const greeting = name ? `Cześć ${name}` : 'Cześć';
 
   return sendEmail(apiKey, {

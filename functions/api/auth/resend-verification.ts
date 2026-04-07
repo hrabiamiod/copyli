@@ -54,13 +54,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   `).bind(user.id, tokenHash, expires, now).run();
 
   if (env.RESEND_API_KEY) {
-    await sendVerificationEmail(
-      env.RESEND_API_KEY,
-      user.email,
-      user.display_name,
-      token,
-      env.APP_URL ?? 'https://copyli.pl'
-    );
+    try {
+      await sendVerificationEmail(
+        env.RESEND_API_KEY,
+        user.email,
+        user.display_name,
+        token,
+        env.APP_URL ?? 'https://copyli.pl'
+      );
+    } catch (e) {
+      console.error('[resend-verification] sendEmail error:', (e as Error).message);
+      return json({ error: 'Błąd wysyłki email: ' + (e as Error).message }, 502, cors);
+    }
+  } else {
+    console.warn('[resend-verification] RESEND_API_KEY not set');
   }
 
   return json({ message: 'Email weryfikacyjny zostal wyslany' }, 200, cors);
