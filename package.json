@@ -16,6 +16,8 @@
     "data:static": "npx tsx scripts/generate-static.ts",
     "data:sitemap": "npx tsx scripts/generate-sitemap.ts",
     "data:all": "npm run data:fetch && npm run data:walk && npm run data:static && npm run data:sitemap",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "deploy": "npm run data:all && npm run build && wrangler pages deploy dist --project-name=copyli"
   },
   "dependencies": {
@@ -33,12 +35,14 @@
     "@fontsource/syne": "^5.2.7",
     "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/typography": "^0.5.19",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/sharp": "^0.31.1",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.27",
+    "better-sqlite3": "^12.8.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
@@ -52,6 +56,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vite": "^8.0.1",
+    "vitest": "^4.1.3",
     "wrangler": "^4.80.0"
   }
 }

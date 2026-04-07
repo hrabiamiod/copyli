@@ -62,6 +62,13 @@ Domena **copyli.pl** ma wyjątkowy potencjał SEO. Zbuduj aplikację z najwyższ
 - **Treść tekstowa na stronach lokalnych** — każda strona miasta powinna zawierać unikalne, wartościowe treści dla alergików (aktualny sezon pyłkowy, dominujące rośliny w regionie, wskazówki), nie tylko mapę
 - **Wewnętrzne linkowanie** między stronami miast i regionów
 
+## Wymagania dotyczące testów
+
+- Każda nowa funkcjonalność backendowa (endpoint, logika auth, integracja API) musi mieć testy w `tests/`
+- Wzorzec testów: `tests/auth/` — mock D1 (`better-sqlite3`), mock KV, helper `callHandler()`
+- Uruchom `npm test` przed dostarczeniem kodu — oddawaj tylko gdy wszystkie testy przechodzą
+- Wyjątek: jeśli testy wymagałyby więcej kodu niż sama funkcjonalność — zapytaj użytkownika o zdanie
+
 ## Wymagania dotyczące kodu
 
 - Kompletny, działający kod gotowy do wdrożenia na Cloudflare Pages jednym poleceniem

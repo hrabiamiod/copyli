@@ -14,6 +14,8 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ProfilePage from "./pages/ProfilePage";
+import DiaryPage from "./pages/DiaryPage";
 import GAPageTracker from "./components/GAPageTracker";
 
 export default function App() {
@@ -33,8 +35,8 @@ export default function App() {
             <Route path="/weryfikacja-email" element={<VerifyEmailPage />} />
 
             {/* Auth — chronione (placeholder do Fazy 4) */}
-            <Route path="/profil" element={<AuthGuard><div style={{ padding: 40, textAlign: 'center' }}><p style={{ fontSize: 32 }}>🌿</p><h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--forest)' }}>Panel alergika</h1><p style={{ color: 'var(--ink-2)' }}>Wkrótce — ustawiasz alergeny i miasta.</p></div></AuthGuard>} />
-            <Route path="/dziennik" element={<AuthGuard><div style={{ padding: 40, textAlign: 'center' }}><p style={{ fontSize: 32 }}>📔</p><h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--forest)' }}>Dziennik objawów</h1><p style={{ color: 'var(--ink-2)' }}>Wkrótce — codzienny dziennik samopoczucia.</p></div></AuthGuard>} />
+            <Route path="/profil" element={<AuthGuard><ProfilePage /></AuthGuard>} />
+            <Route path="/dziennik" element={<AuthGuard><DiaryPage /></AuthGuard>} />
             <Route path="/ustawienia" element={<AuthGuard><div style={{ padding: 40, textAlign: 'center' }}><p style={{ fontSize: 32 }}>⚙️</p><h1 style={{ fontFamily: 'var(--font-display)', color: 'var(--forest)' }}>Ustawienia</h1><p style={{ color: 'var(--ink-2)' }}>Wkrótce — zarządzanie kontem i prywatnością.</p></div></AuthGuard>} />
 
             {/* Mapa i treści */}
