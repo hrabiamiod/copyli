@@ -55,7 +55,7 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
 }
 
 export default function SettingsPage() {
-  const { user, logout, updateUser } = useAuth();
+  const { logout, updateUser } = useAuth();
   const navigate = useNavigate();
 
   const [me, setMe] = useState<MeData | null>(null);
