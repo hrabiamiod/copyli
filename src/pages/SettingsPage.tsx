@@ -100,8 +100,13 @@ export default function SettingsPage() {
   const resendVerification = async () => {
     setResendingVerif(true); setResendMsg('');
     try {
-      await apiFetch('/api/auth/resend-verification', { method: 'POST' });
-      setResendMsg('Wysłano! Sprawdź skrzynkę.');
+      const res = await apiFetch('/api/auth/resend-verification', { method: 'POST' });
+      const data = await res.json() as { message?: string; error?: string };
+      if (!res.ok) {
+        setResendMsg(data.error ?? `Błąd ${res.status}`);
+      } else {
+        setResendMsg('Wysłano! Sprawdź skrzynkę.');
+      }
     } catch (e: unknown) {
       setResendMsg((e as Error).message ?? 'Błąd wysyłki');
     } finally { setResendingVerif(false); }
