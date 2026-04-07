@@ -172,6 +172,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               Open-Meteo
             </a>
             . Nie zastępuje porady lekarskiej.
+            <span style={{ marginLeft: 12, opacity: 0.5 }}>
+              build {__BUILD_HASH__} · {__BUILD_DATE__}
+            </span>
           </div>
         </div>
       </footer>

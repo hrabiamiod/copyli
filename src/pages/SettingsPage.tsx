@@ -101,9 +101,10 @@ export default function SettingsPage() {
     setResendingVerif(true); setResendMsg('');
     try {
       const res = await apiFetch('/api/auth/resend-verification', { method: 'POST' });
-      const data = await res.json() as { message?: string; error?: string };
+      let data: { message?: string; error?: string } = {};
+      try { data = await res.json() as typeof data; } catch { /* HTML error page */ }
       if (!res.ok) {
-        setResendMsg(data.error ?? `Błąd ${res.status}`);
+        setResendMsg(data.error ?? `Błąd serwera (${res.status})`);
       } else {
         setResendMsg('Wysłano! Sprawdź skrzynkę.');
       }
