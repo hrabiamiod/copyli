@@ -61,10 +61,19 @@ async function main() {
   const currentHour = parseInt(warsawTime, 10);
   const todayStr = new Date().toISOString().substring(0, 10);
 
-  console.log(`Uruchamianie alertów. Godzina Warsaw: ${currentHour}:xx, data: ${todayStr}`);
+  const force = process.argv.includes('--force');
+  console.log(`Uruchamianie alertów. Godzina Warsaw: ${currentHour}:xx, data: ${todayStr}${force ? ' [--force]' : ''}`);
 
   // Pobierz użytkowników których pora alertu pasuje do bieżącej godziny
   // i którzy nie dostali jeszcze dzisiaj alertu
+  const hourFilter = force ? '' : 'AND CAST(SUBSTR(uns.alert_time, 1, 2) AS INTEGER) = ?';
+  const dedupFilter = force ? '' : `AND u.id NOT IN (
+        SELECT user_id FROM auth_audit_log
+        WHERE action = 'pollen_alert_sent'
+          AND DATE(created_at) = ?
+      )`;
+  const queryParams = force ? [] : [currentHour, todayStr];
+
   const { results: users } = await d1Query(`
     SELECT u.id, u.email, u.display_name,
            uns.alert_threshold, uns.alert_time,
@@ -73,13 +82,9 @@ async function main() {
     JOIN user_notification_settings uns ON uns.user_id = u.id AND uns.email_alerts = 1
     JOIN user_locations ul ON ul.user_id = u.id AND ul.is_primary = 1
     WHERE u.email_verified = 1 AND u.deleted_at IS NULL
-      AND CAST(SUBSTR(uns.alert_time, 1, 2) AS INTEGER) = ?
-      AND u.id NOT IN (
-        SELECT user_id FROM auth_audit_log
-        WHERE action = 'pollen_alert_sent'
-          AND DATE(created_at) = ?
-      )
-  `, [currentHour, todayStr]);
+      ${hourFilter}
+      ${dedupFilter}
+  `, queryParams);
 
   console.log(`Znaleziono ${users.length} użytkowników do potencjalnego alertu (godzina ${currentHour})`);
 
