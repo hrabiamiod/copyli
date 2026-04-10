@@ -52,7 +52,7 @@ async function _handleLogin(request: Request, env: Env, cors: Record<string, str
 
   const user = await env.DB.prepare(`
     SELECT id, email, email_verified, password_hash, display_name, avatar_url,
-           failed_login_count, locked_until
+           failed_login_count, locked_until, created_at
     FROM users
     WHERE email = ? AND deleted_at IS NULL
   `).bind(normalizedEmail).first<AuthUser>();
@@ -94,6 +94,15 @@ async function _handleLogin(request: Request, env: Env, cors: Record<string, str
     ).bind(now, user.id).run();
   }
 
+  // Pobierz odznaki użytkownika
+  const userBadges = await env.DB.prepare(`
+    SELECT b.id, b.label_pl, b.icon, b.bg, b.color
+    FROM user_badges ub
+    JOIN badges b ON b.id = ub.badge_id
+    WHERE ub.user_id = ?
+    ORDER BY ub.granted_at
+  `).bind(user.id).all<{ id: string; label_pl: string; icon: string; bg: string; color: string }>();
+
   // Generuj tokeny
   const accessToken = await createAccessToken(
     { sub: user.id, email: user.email, name: user.display_name },
@@ -130,6 +139,7 @@ async function _handleLogin(request: Request, env: Env, cors: Record<string, str
         name: user.display_name,
         avatar: user.avatar_url,
         email_verified: !!user.email_verified,
+        badges: userBadges.results ?? [],
       },
       access_token: accessToken,
       ...(isMobile ? { refresh_token: refreshToken } : {}),

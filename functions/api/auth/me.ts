@@ -37,7 +37,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     return json({ error: 'Uzytkownik nie istnieje' }, 404, cors);
   }
 
-  const [allergens, locations, googleAccount] = await Promise.all([
+  const [allergens, locations, googleAccount, userBadges] = await Promise.all([
     env.DB.prepare(`
       SELECT ua.plant_id, ua.severity, p.name_pl, p.slug, p.category, p.icon
       FROM user_allergens ua
@@ -59,6 +59,14 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     env.DB.prepare(
       'SELECT id FROM oauth_accounts WHERE user_id = ? AND provider = ?'
     ).bind(user.id, 'google').first(),
+
+    env.DB.prepare(`
+      SELECT b.id, b.label_pl, b.icon, b.bg, b.color
+      FROM user_badges ub
+      JOIN badges b ON b.id = ub.badge_id
+      WHERE ub.user_id = ?
+      ORDER BY ub.granted_at
+    `).bind(user.id).all<{ id: string; label_pl: string; icon: string; bg: string; color: string }>(),
   ]);
 
   return json(
@@ -71,6 +79,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       created_at: user.created_at,
       has_password: !!user.password_hash,
       google_connected: !!googleAccount,
+      badges: userBadges.results ?? [],
       allergens: allergens.results ?? [],
       locations: locations.results ?? [],
     },

@@ -95,6 +95,14 @@ export default function UserMenu() {
         <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {user.name ?? user.email.split('@')[0]}
         </span>
+        {user.badges.slice(0, 2).map(b => (
+          <span key={b.id} style={{
+            fontSize: 10, fontWeight: 700, color: b.color,
+            background: b.bg, border: `1px solid ${b.color}33`,
+            borderRadius: 6, padding: '1px 5px',
+            letterSpacing: '0.02em', flexShrink: 0,
+          }}>{b.icon}</span>
+        ))}
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : '', transition: 'transform 0.2s' }}>
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -113,9 +121,21 @@ export default function UserMenu() {
 
           {/* Header */}
           <div style={{ padding: '8px 14px 10px', borderBottom: '1px solid rgba(24,24,15,0.07)', marginBottom: 4 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--ink)', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               {user.name ?? '—'}
             </p>
+            {user.badges.length > 0 && (
+              <div style={{ display: 'flex', gap: 4, marginTop: 5, flexWrap: 'wrap' }}>
+                {user.badges.map(b => (
+                  <span key={b.id} style={{
+                    fontSize: 10, fontWeight: 700, color: b.color,
+                    background: b.bg, border: `1px solid ${b.color}33`,
+                    borderRadius: 6, padding: '2px 6px',
+                    letterSpacing: '0.02em',
+                  }}>{b.icon} {b.label_pl}</span>
+                ))}
+              </div>
+            )}
             <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--ink-3)' }}>{user.email}</p>
             {!user.email_verified && (
               <p style={{ margin: '4px 0 0', fontSize: 11, color: '#C9903A', display: 'flex', alignItems: 'center', gap: 4 }}>

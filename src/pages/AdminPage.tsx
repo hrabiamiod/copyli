@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch } from '../lib/api';
 import SEOHead from '../components/SEOHead';
@@ -24,6 +24,119 @@ interface AdminStats {
   top_allergens: Array<{ name_pl: string; icon: string; count: number }>;
   registrations_by_day: Array<{ date: string; count: number }>;
   runtime: CFRuntime;
+}
+
+interface BadgeDef {
+  id: string; label_pl: string; icon: string; bg: string; color: string; description: string | null;
+}
+
+interface UserWithBadges {
+  id: string; email: string; display_name: string | null; created_at: string;
+  badges: { id: string; label_pl: string; icon: string; bg: string; color: string }[];
+}
+
+function BadgeManager() {
+  const [users, setUsers] = useState<UserWithBadges[]>([]);
+  const [badges, setBadges] = useState<BadgeDef[]>([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    Promise.all([
+      apiFetch('/api/admin/users').then(r => r.json() as Promise<{ users: UserWithBadges[] }>),
+      apiFetch('/api/admin/badges').then(r => r.json() as Promise<{ badges: BadgeDef[] }>),
+    ]).then(([ud, bd]) => {
+      setUsers(ud.users);
+      setBadges(bd.badges);
+    }).finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const assign = async (userId: string, badgeId: string) => {
+    setBusy(`${userId}-${badgeId}`);
+    await apiFetch(`/api/admin/users/${userId}/badges`, { method: 'POST', body: JSON.stringify({ badge_id: badgeId }) });
+    setBusy(null);
+    load();
+  };
+
+  const revoke = async (userId: string, badgeId: string) => {
+    setBusy(`${userId}-${badgeId}`);
+    await apiFetch(`/api/admin/users/${userId}/badges`, { method: 'DELETE', body: JSON.stringify({ badge_id: badgeId }) });
+    setBusy(null);
+    load();
+  };
+
+  const filtered = users.filter(u =>
+    u.email.toLowerCase().includes(search.toLowerCase()) ||
+    (u.display_name ?? '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loading) return <p style={{ fontSize: 12, color: 'var(--ink-3)', padding: '12px 0' }}>Ładowanie…</p>;
+
+  return (
+    <div>
+      <input
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        placeholder="Szukaj użytkownika…"
+        style={{
+          width: '100%', padding: '7px 10px', fontSize: 13, borderRadius: 8,
+          border: '1px solid rgba(24,24,15,0.15)', background: 'var(--cream)',
+          outline: 'none', marginBottom: 12, boxSizing: 'border-box',
+        }}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {filtered.map(u => {
+          const userBadgeIds = new Set(u.badges.map(b => b.id));
+          return (
+            <div key={u.id} style={{
+              background: 'var(--cream)', borderRadius: 10, padding: '10px 14px',
+              border: '1px solid rgba(24,24,15,0.07)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>{u.display_name ?? '—'}</span>
+                <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>{u.email}</span>
+                {u.badges.map(b => (
+                  <span key={b.id} style={{
+                    fontSize: 10, fontWeight: 700, color: b.color, background: b.bg,
+                    border: `1px solid ${b.color}33`, borderRadius: 6, padding: '1px 6px',
+                  }}>{b.icon} {b.label_pl}</span>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {badges.map(b => {
+                  const has = userBadgeIds.has(b.id);
+                  const key = `${u.id}-${b.id}`;
+                  return (
+                    <button
+                      key={b.id}
+                      disabled={busy === key}
+                      onClick={() => has ? revoke(u.id, b.id) : assign(u.id, b.id)}
+                      style={{
+                        fontSize: 11, fontWeight: 600, borderRadius: 6, padding: '3px 8px',
+                        border: `1px solid ${has ? b.color : 'rgba(24,24,15,0.2)'}`,
+                        background: has ? b.bg : 'transparent',
+                        color: has ? b.color : 'var(--ink-3)',
+                        cursor: busy === key ? 'wait' : 'pointer',
+                        opacity: busy === key ? 0.6 : 1,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {b.icon} {b.label_pl} {has ? '✕' : '+'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <p style={{ fontSize: 12, color: 'var(--ink-3)' }}>Brak wyników.</p>}
+      </div>
+    </div>
+  );
 }
 
 function StatCard({ label, value, sub, color = 'var(--forest)' }: { label: string; value: string | number; sub?: string; color?: string }) {
@@ -175,6 +288,14 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {/* Odznaki użytkowników */}
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: '18px 20px', boxShadow: 'var(--s-card)', marginBottom: 16 }}>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
+            🏅 Odznaki użytkowników
+          </p>
+          <BadgeManager />
+        </div>
 
         {/* Ostatnie rejestracje */}
         <div style={{ background: 'var(--surface)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--s-card)' }}>

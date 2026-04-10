@@ -9,12 +9,21 @@ import {
 } from 'react';
 import { setAccessToken, setRefreshFn } from '../lib/api';
 
+export interface Badge {
+  id: string;
+  label_pl: string;
+  icon: string;
+  bg: string;
+  color: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;
   name: string | null;
   avatar: string | null;
   email_verified: boolean;
+  badges: Badge[];
 }
 
 interface AuthContextType {
@@ -77,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: (me as { name?: string | null }).name ?? null,
             avatar: (me as { avatar?: string | null }).avatar ?? null,
             email_verified: me.email_verified,
+            badges: (me as { badges?: Badge[] }).badges ?? [],
           });
         }
       } catch { /* kontynuuj bez danych usera */ }
@@ -109,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               name: (me.name as string | null) ?? null,
               avatar: (me.avatar as string | null) ?? null,
               email_verified: me.email_verified as boolean,
+              badges: (me.badges as Badge[] | undefined) ?? [],
             });
           }
         } catch { /* brak sieci / błąd */ }
@@ -135,6 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: data.user.name,
         avatar: data.user.avatar,
         email_verified: data.user.email_verified,
+        badges: data.user.badges ?? [],
       });
     }
   }, []);
@@ -162,6 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: data.user.name,
         avatar: data.user.avatar ?? null,
         email_verified: data.user.email_verified,
+        badges: [],
       });
     }
   }, []);

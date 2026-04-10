@@ -17,6 +17,14 @@ export interface JWTPayload {
   exp: number;
 }
 
+export interface Badge {
+  id: string;
+  label_pl: string;
+  icon: string;
+  bg: string;
+  color: string;
+}
+
 export interface AuthUser {
   id: string;
   email: string;

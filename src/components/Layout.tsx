@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CitySearch from "./CitySearch";
 import UserMenu from "./UserMenu";
+import { useAuth } from "../context/AuthContext";
 
 const LogoIcon = () => (
   <svg width="15" height="14" viewBox="0 0 48 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -12,6 +13,7 @@ const LogoIcon = () => (
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -96,6 +98,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <UserMenu />
         </div>
       </header>
+
+      {user?.badges.some(b => b.id === 'pioneer') && (
+        <div style={{
+          background: 'linear-gradient(90deg, #fffbeb, #fef3c7, #fffbeb)',
+          borderBottom: '1px solid rgba(245,158,11,0.3)',
+          padding: '6px 16px',
+          textAlign: 'center', fontSize: 12, color: '#92400e',
+          fontWeight: 500, letterSpacing: '0.01em',
+        }}>
+          ✦ Jesteś pierwszą zarejestrowaną osobą na CoPyli.pl — witamy i dziękujemy!
+        </div>
+      )}
 
       <main style={{ flex: 1 }}>{children}</main>
 
