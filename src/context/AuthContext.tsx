@@ -134,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       headers: { 'Content-Type': 'application/json', 'X-Copyli-Client': 'web' },
       body: JSON.stringify({ email, password }),
     });
-    let data: { access_token?: string; user?: { id: string; email: string; name: string | null; avatar: string | null; email_verified: boolean }; error?: string } = {};
+    let data: { access_token?: string; user?: { id: string; email: string; name: string | null; avatar: string | null; email_verified: boolean; badges?: Badge[] }; error?: string } = {};
     try { data = await res.json(); } catch { /* nie-JSON response */ }
     if (!res.ok) throw new Error(data.error ?? `Błąd serwera (${res.status}) — spróbuj ponownie`);
 
