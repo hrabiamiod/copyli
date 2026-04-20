@@ -5,7 +5,8 @@ import type { PollenLevel } from "../types";
 import SEOHead from "../components/SEOHead";
 import PollenBadge from "../components/PollenBadge";
 import { getVoivodeshipLevel, CATEGORY_LABELS, CATEGORY_ICONS, LEVEL_LABELS, LEVEL_COLORS } from "../utils/pollen";
-import { getVoivodeshipPageTitle, getVoivodeshipPageDescription } from "../utils/seo";
+import { getVoivodeshipPageTitle, getVoivodeshipPageDescription, getStructuredDataVoivodeship } from "../utils/seo";
+import { getVoivodeshipInfo } from "../utils/voivodeship-descriptions";
 
 const LEVEL_ORDER: PollenLevel[] = ["none", "low", "medium", "high", "very_high"];
 const LEVEL_BAR_W: Record<PollenLevel, string> = {
@@ -41,6 +42,7 @@ export default function VoivodeshipPage() {
   const voivCities = cities.filter(c => c.voivodeship_slug === wojewodztwo).sort((a,b) => b.population - a.population);
   const voivName = voivCities[0]?.voivodeship_name ?? "";
   const level = getVoivodeshipLevel(mapData, wojewodztwo ?? "");
+  const voivInfo = getVoivodeshipInfo(wojewodztwo ?? "");
 
   // Plant data for this voivodeship
   const voivPlants = mapData
@@ -69,6 +71,7 @@ export default function VoivodeshipPage() {
         title={getVoivodeshipPageTitle(voivName)}
         description={getVoivodeshipPageDescription(voivName)}
         canonical={`https://copyli.pl/pylek/woj/${wojewodztwo}`}
+        structuredData={getStructuredDataVoivodeship(wojewodztwo ?? "", voivName, voivCities.length)}
       />
 
       <div style={{ maxWidth:860, margin:"0 auto", padding:"24px 16px 56px", display:"flex", flexDirection:"column", gap:24 }}>
@@ -229,21 +232,30 @@ export default function VoivodeshipPage() {
           </div>
         </div>
 
-        {/* Info blurb */}
-        <div
-          className="anim-fade-up delay-3"
-          style={{
+        {/* Regional description */}
+        <div className="anim-fade-up delay-3" style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <p style={{
+            fontSize:14, lineHeight:1.7, color:"var(--ink-2)", margin:0,
+          }}>
+            {voivInfo.description}
+          </p>
+          <div style={{
+            display:"flex", flexWrap:"wrap", gap:16,
+            padding:"12px 16px",
             background:"rgba(27,67,50,0.05)",
             border:"1px solid rgba(27,67,50,0.10)",
             borderRadius:"var(--r-md)",
-            padding:"14px 18px",
-            fontSize:13,
-            lineHeight:1.65,
-            color:"var(--forest)",
-          }}
-        >
-          Sprawdź aktualne stężenie pyłków, prognozę 5-dniową i Indeks Spacerowy
-          dla każdego miasta w województwie {voivName}. Dane z Open-Meteo, aktualizowane co 2 godziny.
+            fontSize:12,
+          }}>
+            <div>
+              <span style={{ color:"var(--ink-3)", marginRight:6 }}>Główne alergeny:</span>
+              <span style={{ color:"var(--forest)", fontWeight:600 }}>{voivInfo.dominantPlants}</span>
+            </div>
+            <div>
+              <span style={{ color:"var(--ink-3)", marginRight:6 }}>Sezon pyłkowy:</span>
+              <span style={{ color:"var(--forest)", fontWeight:600 }}>{voivInfo.season}</span>
+            </div>
+          </div>
         </div>
 
         {/* All voivodeships */}

@@ -58,6 +58,42 @@ export function getStructuredDataCity(city: City): object {
   };
 }
 
+export function getStructuredDataVoivodeship(slug: string, name: string, cityCount: number): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["WebPage", "Dataset"],
+    "name": `Pyłki w województwie ${name}`,
+    "description": `Aktualne stężenia pyłków roślin w ${cityCount} miastach województwa ${name}. Dane aktualizowane co 2 godziny.`,
+    "url": `https://copyli.pl/pylek/woj/${slug}`,
+    "about": {
+      "@type": "AdministrativeArea",
+      "name": `Województwo ${name}`,
+      "containedInPlace": {
+        "@type": "Country",
+        "name": "Polska",
+        "sameAs": "https://www.wikidata.org/wiki/Q36",
+      }
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "CoPyli.pl",
+      "url": "https://copyli.pl",
+    },
+    "temporalCoverage": new Date().toISOString().split("T")[0],
+    "spatialCoverage": {
+      "@type": "AdministrativeArea",
+      "name": `Województwo ${name}`,
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://copyli.pl" },
+        { "@type": "ListItem", "position": 2, "name": `Województwo ${name}`, "item": `https://copyli.pl/pylek/woj/${slug}` },
+      ]
+    }
+  };
+}
+
 export function getStructuredDataFAQ(): object {
   return {
     "@context": "https://schema.org",

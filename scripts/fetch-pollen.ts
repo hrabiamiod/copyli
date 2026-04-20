@@ -249,6 +249,9 @@ async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
 
   await Promise.all(promises);
 
+  // Usuń przeterminowane prognozy przed insertem nowych
+  await d1Query("DELETE FROM pollen_forecast WHERE forecast_date < date('now')");
+
   // 4 zapytania na cały batch miast zamiast ~310 pojedynczych
   await Promise.all([
     d1MultiInsert("weather_current", "city_id, temperature, wind_speed, precipitation, humidity, aqi, aqi_label, updated_at", weatherRows),

@@ -140,6 +140,7 @@ async function main() {
     FROM pollen_forecast pf
     JOIN plants p ON pf.plant_id = p.id
     JOIN cities c ON pf.city_id = c.id
+    WHERE pf.forecast_date >= date('now')
     ORDER BY c.id, pf.forecast_date, p.category
   `) as Array<{ city_slug: string } & Record<string, unknown>>;
 
