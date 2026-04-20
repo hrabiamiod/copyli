@@ -7,9 +7,9 @@ import { CATEGORY_LABELS } from "../utils/pollen";
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 
 const CAT_COLORS: Record<string, { base: string; peak: string }> = {
-  tree:  { base: "#52B78855", peak: "#1B4332" },
-  grass: { base: "#F4A26155", peak: "#C9903A" },
-  weed:  { base: "#E76F5155", peak: "#C1121F" },
+  tree:  { base: "rgba(82,183,136,0.33)",  peak: "var(--forest)" },
+  grass: { base: "rgba(244,162,97,0.33)",  peak: "var(--gold)" },
+  weed:  { base: "rgba(231,111,81,0.33)",  peak: "var(--p-very-high)" },
 };
 
 export default function CalendarPage() {
