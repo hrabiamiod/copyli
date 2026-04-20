@@ -7,6 +7,7 @@ import PollenCard from "../components/PollenCard";
 import ForecastChart from "../components/ForecastChart";
 import WalkIndexCard from "../components/WalkIndexCard";
 import AirQualityCard from "../components/AirQualityCard";
+import HistoryChart from "../components/HistoryChart";
 import { getCityPageTitle, getCityPageDescription, getStructuredDataCity } from "../utils/seo";
 
 const PollenMap = lazy(() => import("../components/PollenMap"));
@@ -19,6 +20,7 @@ export default function CityPage() {
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [history, setHistory] = useState<unknown[]>([]);
 
   useEffect(() => {
     if (!miasto) return;
@@ -29,6 +31,10 @@ export default function CityPage() {
         const [cityData, allCities] = await Promise.all([dr.json(), cr.json()]) as [CityPageData, City[]];
         setCity(allCities.find(c => c.slug === miasto) ?? null);
         setData(cityData); setCities(allCities); setLoading(false);
+        fetch(`/data/history/${miasto}.json`)
+          .then(r => r.ok ? r.json() : [])
+          .then((h: unknown[]) => setHistory(h))
+          .catch(() => {});
       }).catch(() => { setError(true); setLoading(false); });
   }, [miasto]);
 
@@ -122,6 +128,20 @@ export default function CityPage() {
                   color:"var(--ink)", margin:"0 0 16px", letterSpacing:"-0.02em",
                 }}>Prognoza pyłkowa — 5 dni</h2>
                 <ForecastChart forecast={data.forecast} />
+              </div>
+            )}
+
+            {/* Historia / Trendy sezonowe */}
+            {history.length > 0 && (
+              <div className="card anim-fade-up delay-3" style={{ padding: "20px 22px" }}>
+                <h2 style={{
+                  fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700,
+                  color: "var(--ink)", margin: "0 0 4px", letterSpacing: "-0.02em",
+                }}>Trendy sezonowe — ostatnie 90 dni</h2>
+                <p style={{ fontSize: 12, color: "var(--ink-3)", margin: "0 0 16px" }}>
+                  Maksymalne dzienne stężenie pyłków w {city.name}.
+                </p>
+                <HistoryChart history={history as Parameters<typeof HistoryChart>[0]["history"]} />
               </div>
             )}
 

@@ -33,6 +33,7 @@ function writeJSON(filename: string, data: unknown) {
 async function main() {
   mkdirSync(DATA_DIR, { recursive: true });
   mkdirSync(join(DATA_DIR, "cities"), { recursive: true });
+  mkdirSync(join(DATA_DIR, "history"), { recursive: true });
 
   // 1. Lista wszystkich miast
   console.log("Generowanie cities.json...");
@@ -182,7 +183,66 @@ async function main() {
     if ((i + 1) % 200 === 0) console.log(`  ${i + 1}/${cities.length}...`);
   }
 
-  // 6. Meta
+  // 6. Historia pyłkowa (ostatnie 90 dni) — per miasto
+  console.log("Generowanie plików historii pyłkowej...");
+  const allHistory = d1Query(`
+    SELECT
+      c.slug as city_slug,
+      p.slug as plant_slug,
+      p.name_pl as plant_name,
+      p.category,
+      p.icon,
+      ph.date,
+      ph.concentration,
+      ph.level
+    FROM pollen_history ph
+    JOIN cities c ON ph.city_id = c.id
+    JOIN plants p ON ph.plant_id = p.id
+    WHERE ph.date >= date('now', '-90 days')
+    ORDER BY c.id, p.id, ph.date
+  `) as Array<{
+    city_slug: string;
+    plant_slug: string;
+    plant_name: string;
+    category: string;
+    icon: string;
+    date: string;
+    concentration: number;
+    level: string;
+  }>;
+
+  // Grupuj w pamięci: city_slug → plant_slug → entries[]
+  type HistoryRow = { date: string; concentration: number; level: string };
+  type PlantMeta = { plant_slug: string; plant_name: string; category: string; icon: string; data: HistoryRow[] };
+  const historyByCity = new Map<string, Map<string, PlantMeta>>();
+  for (const row of allHistory) {
+    if (!historyByCity.has(row.city_slug)) historyByCity.set(row.city_slug, new Map());
+    const plantMap = historyByCity.get(row.city_slug)!;
+    if (!plantMap.has(row.plant_slug)) {
+      plantMap.set(row.plant_slug, {
+        plant_slug: row.plant_slug,
+        plant_name: row.plant_name,
+        category: row.category,
+        icon: row.icon,
+        data: [],
+      });
+    }
+    plantMap.get(row.plant_slug)!.data.push({
+      date: row.date,
+      concentration: row.concentration,
+      level: row.level,
+    });
+  }
+
+  let historyCount = 0;
+  for (const [citySlug, plantMap] of historyByCity) {
+    const payload = Array.from(plantMap.values());
+    writeJSON(`history/${citySlug}.json`, payload);
+    historyCount++;
+  }
+  console.log(`  Zapisano historię dla ${historyCount} miast.`);
+
+  // 7. Meta
   writeJSON("meta.json", {
     updated_at: new Date().toISOString(),
     cities_count: cities.length,
