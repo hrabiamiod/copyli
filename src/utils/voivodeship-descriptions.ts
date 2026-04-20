@@ -56,7 +56,7 @@ const VOIVODESHIP_INFO: Record<string, VoivodeshipInfo> = {
     season: "Luty–sierpień",
   },
   "pomorskie": {
-    description: "Pomorze Gdańskie łączy wybrzeże Bałtyku z Pojezierzem Kaszubskim. Morski klimat łagodzi sezony pyłkowe — wiatr znad Bałtyku „rozcieńcza" stężenia, ale może też zawiewać pyłki z daleka. Sosnowe lasy Trójmiejskiego Parku Krajobrazowego intensywnie pylą w maju. Alergicy na trawy powinni uważać na kaszubskie łąki w czerwcu i lipcu.",
+    description: "Pomorze Gdańskie łączy wybrzeże Bałtyku z Pojezierzem Kaszubskim. Morski klimat łagodzi sezony pyłkowe — wiatr znad Bałtyku 'rozcieńcza' stężenia, ale może też zawiewać pyłki z daleka. Sosnowe lasy Trójmiejskiego Parku Krajobrazowego intensywnie pylą w maju. Alergicy na trawy powinni uważać na kaszubskie łąki w czerwcu i lipcu.",
     dominantPlants: "Sosna, brzoza, trawy, leszczyna",
     season: "Marzec–lipiec",
   },
