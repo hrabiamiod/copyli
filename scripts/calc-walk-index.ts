@@ -126,7 +126,19 @@ async function main() {
   const pollenRes = await d1Query(`
     SELECT
       city_id,
-      MAX(level) as max_level,
+      CASE MAX(CASE level
+        WHEN 'none'      THEN 0
+        WHEN 'low'       THEN 1
+        WHEN 'medium'    THEN 2
+        WHEN 'high'      THEN 3
+        WHEN 'very_high' THEN 4
+        ELSE 0 END)
+      WHEN 0 THEN 'none'
+      WHEN 1 THEN 'low'
+      WHEN 2 THEN 'medium'
+      WHEN 3 THEN 'high'
+      WHEN 4 THEN 'very_high'
+      END as max_level,
       COUNT(CASE WHEN level IN ('high', 'very_high') THEN 1 END) as high_count
     FROM pollen_current
     GROUP BY city_id
