@@ -1,7 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { City, MapData, PollenLevel } from "../types";
 import { getVoivodeshipLevel, getVoivodeshipFillColor, LEVEL_LABELS, LEVEL_COLORS } from "../utils/pollen";
+
+const LEVEL_HEAT: Record<string, number> = {
+  none: 0, low: 0.25, medium: 0.5, high: 0.75, very_high: 1,
+};
 
 interface PollenMapProps {
   cities: City[];
@@ -17,9 +21,16 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   const mapInstanceRef = useRef<L.Map | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tileLayerRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const heatLayerRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const geojsonLayerRef = useRef<any>(null);
   const navigate = useNavigate();
   const [geolocating, setGeolocating] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [showcase, setShowcase] = useState(false);
 
   // Budujemy mapę voivodeship_slug → max_level dla kolorowania markerów
   const voivLevelMap = new Map<string, PollenLevel>();
@@ -54,7 +65,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
       // Na mini-mapie (CityPage) zoom w prawym dolnym rogu — nie zasłania legendy
       L.control.zoom({ position: compact ? "bottomright" : "topleft" }).addTo(map);
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
+      tileLayerRef.current = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
         maxZoom: 19,
@@ -65,7 +76,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         const geoRes = await fetch("/data/voivodeships.geojson");
         if (geoRes.ok) {
           const geoJson = await geoRes.json();
-          L.geoJSON(geoJson, {
+          geojsonLayerRef.current = L.geoJSON(geoJson, {
             style: (feature) => {
               const slug = feature?.properties?.slug as string;
               const level = getVoivodeshipLevel(mapData, slug);
@@ -195,6 +206,69 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     };
   }, []);
 
+  const toggleShowcase = useCallback(async () => {
+    const map = mapInstanceRef.current;
+    const L = leafletRef.current;
+    if (!map || !L) return;
+
+    const next = !showcase;
+    setShowcase(next);
+
+    // Zmień tile layer
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+    const tileUrl = next
+      ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+    tileLayerRef.current = L.tileLayer(tileUrl, {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: "abcd",
+      maxZoom: 19,
+    }).addTo(map);
+    tileLayerRef.current.bringToBack();
+
+    // Zaktualizuj styl GeoJSON
+    if (geojsonLayerRef.current) {
+      geojsonLayerRef.current.setStyle((feature: { properties?: { slug?: string } }) => {
+        const slug = feature?.properties?.slug as string;
+        const level = getVoivodeshipLevel(mapData, slug);
+        return next
+          ? { fillColor: getVoivodeshipFillColor(level), weight: 1, opacity: 0.4, color: "rgba(255,255,255,0.3)", fillOpacity: 0.45 }
+          : { fillColor: getVoivodeshipFillColor(level), weight: 2, opacity: 1, color: "#fff", fillOpacity: 0.65 };
+      });
+    }
+
+    // Heatmapa
+    if (heatLayerRef.current) {
+      map.removeLayer(heatLayerRef.current);
+      heatLayerRef.current = null;
+    }
+
+    if (next) {
+      await import("leaflet.heat");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const heatPoints = cities
+        .filter(c => c.lat >= 49 && c.lat <= 55 && c.lon >= 14 && c.lon <= 24.5)
+        .map(c => {
+          const levelKey = (cityLevels[c.slug] ?? "none") as string;
+          const intensity = LEVEL_HEAT[levelKey] ?? 0;
+          return [c.lat, c.lon, intensity] as [number, number, number];
+        })
+        .filter(([,, i]) => i > 0);
+
+      if (heatPoints.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        heatLayerRef.current = (L as any).heatLayer(heatPoints, {
+          radius: 35,
+          blur: 30,
+          maxZoom: 10,
+          gradient: { 0.25: "#52B788", 0.5: "#F4A261", 0.75: "#E76F51", 1.0: "#C1121F" },
+        }).addTo(map);
+      }
+    }
+  }, [showcase, cities, cityLevels, mapData]);
+
   const geoMarkerRef = useRef<import("leaflet").Marker | null>(null);
 
   const handleGeolocate = () => {
@@ -280,6 +354,37 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full rounded-xl" />
+
+      {/* Showcase toggle — tylko na pełnej mapie */}
+      {!compact && (
+        <button
+          onClick={toggleShowcase}
+          title={showcase ? "Tryb normalny" : "Tryb prezentacji"}
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: 1000,
+            background: showcase ? "#1B4332" : "rgba(255,255,255,0.95)",
+            border: showcase ? "1.5px solid rgba(255,255,255,0.25)" : "1.5px solid rgba(24,24,15,0.1)",
+            borderRadius: 10,
+            padding: "6px 12px",
+            fontSize: 12,
+            fontWeight: 700,
+            color: showcase ? "#fff" : "var(--ink)",
+            cursor: "pointer",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            transition: "all 0.3s",
+            letterSpacing: "0.02em",
+          }}
+        >
+          {showcase ? "✦" : "✦"} {showcase ? "Normalny" : "Prezentacja"}
+        </button>
+      )}
 
       {/* Geolocate button — tylko na pełnej mapie */}
       {!compact && (
