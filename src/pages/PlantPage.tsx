@@ -40,7 +40,7 @@ const PLANT_INFO: Record<string, { info: string; tips: string[] }> = {
     ],
   },
   hazel: {
-    info: "Leszczyna to najwcześniejszy alergen w Polsce — może pylić już w januarym w ciepłe zimy, szczególnie na południu kraju. Jej pyłek, choć mniej alergizujący niż pyłek brzozy, często otwiera sezon i uwrażliwia układ odpornościowy.",
+    info: "Leszczyna to najwcześniejszy alergen w Polsce — może pylić już w styczniu w ciepłe zimy, szczególnie na południu kraju. Jej pyłek, choć mniej alergizujący niż pyłek brzozy, często otwiera sezon i uwrażliwia układ odpornościowy.",
     tips: [
       "Monitoruj prognozy od stycznia — w ciepłe zimy stężenia mogą być zaskakująco wysokie",
       "Reaktywność krzyżowa z brzozą i olchą",
@@ -51,7 +51,7 @@ const PLANT_INFO: Record<string, { info: string; tips: string[] }> = {
     info: "Alergia na trawy to najczęstsza alergia pyłkowa w Polsce — dotyczy ok. 30% alergików. Sezon jest długi (maj–wrzesień) z wyraźnym szczytem w czerwcu i lipcu. Główne alergeny to tymotka, kupkówka i życica.",
     tips: [
       "Unikaj przebywania na łąkach i polach w południe — stężenia są wtedy najwyższe",
-      "Po powrocie z zewnątrz koszula się i myj włosy — pyłek mocno osiada na włosach",
+      "Po powrocie z zewnątrz przebierz się i umyj włosy — pyłek mocno osiada na ubraniu i włosach",
       "Kośmy trawnik przed zakwitnięciem — krótkie trawy pylą mniej",
       "Leki antyhistaminowe zacznij brać 1–2 tygodnie przed spodziewanym szczytem",
     ],
@@ -60,7 +60,7 @@ const PLANT_INFO: Record<string, { info: string; tips: string[] }> = {
     info: "Ambrozja (Ambrosia artemisiifolia) to inwazyjna roślina z Ameryki Północnej — jeden z najgroźniejszych alergenów w Europie. Nawet 10 ziaren pyłku/m³ wystarcza do wywołania objawów. Zasięg ambrozji w Polsce stale się powiększa, głównie w dolinie Wisły i na południu.",
     tips: [
       "Sezon sierpień–wrzesień — zaplanuj urlop z dala od zachwaszczonych terenów",
-      "Reaktywność krzyżowa z bylic ą, słonecznikiem i bananem",
+      "Reaktywność krzyżowa z bylicą, słonecznikiem i bananem",
       "Ambrozja rośnie na nieużytkach, nasypy kolejowe i pobocza dróg — omijaj je",
       "Stężenia są najwyższe w ciepłe, suche wieczory",
     ],

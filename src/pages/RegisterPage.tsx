@@ -83,7 +83,7 @@ export default function RegisterPage() {
             Dołącz do CoPyli
           </h1>
           <p style={{ fontSize: 14, color: 'var(--ink-2)', margin: 0 }}>
-            Spersonalizowane alerty pylkowe i dziennik objawów
+            Spersonalizowane alerty pyłkowe i dziennik objawów
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function RegisterPage() {
                   style={{ marginTop: 2, accentColor: 'var(--forest)', flexShrink: 0 }}
                 />
                 <span style={{ fontSize: 12, color: 'var(--ink-2)', lineHeight: 1.5 }}>
-                  Chcę otrzymywać sezonowe alerty pylkowe i newsletter (opcjonalne)
+                  Chcę otrzymywać sezonowe alerty pyłkowe i newsletter (opcjonalne)
                 </span>
               </label>
             </div>

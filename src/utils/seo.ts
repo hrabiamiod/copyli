@@ -128,7 +128,7 @@ export function getStructuredDataFAQ(): object {
         "name": "Skąd pochodzą dane pyłkowe na CoPyli.pl?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Dane pyłkowe pochodzą z Open-Meteo Air Quality API — bezpłatnej, dokładnej usługi pogodowej. Są aktualizowane co 2 godziny dla 954 polskich miast."
+          "text": "Dane pyłkowe pochodzą z Open-Meteo Air Quality API — bezpłatnej, dokładnej usługi pogodowej. Są aktualizowane co 2 godziny dla ponad 1000 polskich miast."
         }
       }
     ]

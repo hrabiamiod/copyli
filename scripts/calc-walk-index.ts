@@ -62,9 +62,13 @@ function calcScore(weather: WeatherData, pollen: PollenSummary): {
   const levelPenalty: Record<string, number> = {
     none: 0, low: 5, medium: 15, high: 30, very_high: 50
   };
+  const levelLabel: Record<string, string> = {
+    low: "niskie pylenie", medium: "umiarkowane pylenie",
+    high: "wysokie pylenie", very_high: "bardzo wysokie pylenie",
+  };
   const pollenPenalty = levelPenalty[pollen.max_level] ?? 0;
   score -= pollenPenalty;
-  if (pollenPenalty > 0) reasons.push(`pylenie ${pollen.max_level}`);
+  if (pollenPenalty > 0) reasons.push(levelLabel[pollen.max_level] ?? "pylenie");
 
   // Dodatkowa kara za wiele pylących roślin
   if (pollen.high_count >= 2) {
