@@ -70,10 +70,21 @@ function getLevel(concentration: number | null, plant: Plant): string {
 }
 
 function getCurrentHourIndex(times: string[]): number {
-  const now = new Date();
-  const nowHour = now.toISOString().substring(0, 13); // "2024-04-15T14"
-  const idx = times.findIndex(t => t.startsWith(nowHour));
-  return idx >= 0 ? idx : Math.max(0, times.length - 1);
+  // API zwraca czasy w Europe/Warsaw — musimy porównywać z lokalnym czasem warszawskim
+  const warsawHour = new Date()
+    .toLocaleString("sv", { timeZone: "Europe/Warsaw" })
+    .replace(" ", "T")
+    .substring(0, 13); // "2026-04-21T14"
+  const idx = times.findIndex(t => t.substring(0, 13) === warsawHour);
+  if (idx >= 0) return idx;
+  // Fallback: znajdź ostatni czas <= teraz
+  const nowMs = Date.now();
+  let best = 0;
+  for (let i = 0; i < times.length; i++) {
+    const t = new Date(times[i] + ":00+02:00").getTime(); // zakładamy CEST
+    if (t <= nowMs) best = i; else break;
+  }
+  return best;
 }
 
 function getDayAverage(values: (number | null)[], times: string[], dateStr: string): number {
@@ -178,7 +189,9 @@ async function fetchWeather(lat: number, lon: number): Promise<Record<string, (n
 
 async function processBatch(cities: City[], plants: Plant[]): Promise<void> {
   const now = new Date().toISOString();
-  const todayStr = now.substring(0, 10);
+  // Data "dziś" w strefie Warsaw — API zwraca czasy lokalne
+  const todayStr = new Date()
+    .toLocaleDateString("sv", { timeZone: "Europe/Warsaw" }); // "2026-04-21"
 
   // Zbieramy VALUES z całego batchu — potem jeden INSERT per tabela
   const currentRows: string[] = [];
