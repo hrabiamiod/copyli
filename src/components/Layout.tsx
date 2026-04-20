@@ -148,7 +148,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               },
               {
                 title: "Informacje",
-                links: [["Rośliny pylące","pylek/rosliny"],["Kalendarz pylenia","kalendarz-pylenia"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
+                links: [["Rośliny pylące","pylek/rosliny"],["Kalendarz pylenia","kalendarz-pylenia"],["Regulamin","regulamin"],["Polityka prywatności","polityka-prywatnosci"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
                 prefix: "/",
               },
             ].map(({ title, links, prefix }) => (

@@ -22,6 +22,8 @@ import AdminMfaPage from "./pages/AdminMfaPage";
 import AdminMfaSetupPage from "./pages/AdminMfaSetupPage";
 import AdminGuard from "./components/AdminGuard";
 import GAPageTracker from "./components/GAPageTracker";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 
 export default function App() {
   return (
@@ -54,6 +56,8 @@ export default function App() {
             <Route path="/pylek/:miasto" element={<CityPage />} />
             <Route path="/porownaj/:miasto1/:miasto2" element={<ComparePage />} />
             <Route path="/kalendarz-pylenia" element={<CalendarPage />} />
+            <Route path="/regulamin" element={<TermsPage />} />
+            <Route path="/polityka-prywatnosci" element={<PrivacyPage />} />
 
             <Route path="*" element={
               <div className="max-w-xl mx-auto px-4 py-16 text-center">
