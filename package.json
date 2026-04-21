@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && npx tsx scripts/generate-og-images-cities.ts && npx tsx scripts/prerender.ts",
+    "build": "tsc -b && npx tsx scripts/generate-og-images-cities.ts && vite build && npx tsx scripts/prerender.ts",
     "generate:og": "npx tsx scripts/generate-og-images-cities.ts",
     "prerender": "npx tsx scripts/prerender.ts",
     "lint": "eslint .",
