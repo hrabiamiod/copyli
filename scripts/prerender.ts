@@ -95,10 +95,12 @@ function injectMeta(html: string, opts: {
   title: string;
   description: string;
   canonical: string;
+  ogImage?: string;
   structuredData?: object;
   bodyHtml?: string;
 }): string {
-  const { title, description, canonical, structuredData, bodyHtml } = opts;
+  const { title, description, canonical, ogImage, structuredData, bodyHtml } = opts;
+  const image = ogImage ?? "https://copyli.pl/og-default.png";
 
   const ldJson = structuredData
     ? `\n  <script type="application/ld+json">${JSON.stringify(structuredData)}</script>`
@@ -111,11 +113,11 @@ function injectMeta(html: string, opts: {
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pl_PL" />
   <meta property="og:site_name" content="CoPyli.pl" />
-  <meta property="og:image" content="https://copyli.pl/og-default.png" />
+  <meta property="og:image" content="${esc(image)}" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(title)}" />
   <meta name="twitter:description" content="${esc(description)}" />
-  <meta name="twitter:image" content="https://copyli.pl/og-default.png" />
+  <meta name="twitter:image" content="${esc(image)}" />
   <link rel="canonical" href="${esc(canonical)}" />${ldJson}`;
 
   // Usuń istniejące OG/Twitter/canonical z szablonu, żeby uniknąć duplikatów
@@ -170,6 +172,7 @@ function generateCityPage(city: City, allCities: City[]): void {
     : `Aktualne stężenie pyłków w ${city.name} (${city.voivodeship_name}). Sprawdź co pyli, prognozę 5-dniową i Indeks Spacerowy. Dane dla alergików aktualizowane co 2 godziny.`;
 
   const canonical = `https://copyli.pl/pylek/${city.slug}`;
+  const ogImage = `https://copyli.pl/og/cities/${city.slug}.png`;
 
   const pollenRows = activePollen.length > 0
     ? activePollen.map(p =>
@@ -242,7 +245,7 @@ function generateCityPage(city: City, allCities: City[]): void {
     } : undefined,
   };
 
-  const html = injectMeta(template, { title, description, canonical, structuredData, bodyHtml });
+  const html = injectMeta(template, { title, description, canonical, ogImage, structuredData, bodyHtml });
   const outDir = path.join(DIST, "pylek");
   ensureDir(outDir);
   fs.writeFileSync(path.join(outDir, `${city.slug}.html`), html);

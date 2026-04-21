@@ -3,12 +3,13 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import CitySearch from "../components/CitySearch";
 import type { City, CityPageData } from "../types";
 import SEOHead from "../components/SEOHead";
+import ShareButton from "../components/ShareButton";
 import PollenCard from "../components/PollenCard";
 import ForecastChart from "../components/ForecastChart";
 import WalkIndexCard from "../components/WalkIndexCard";
 import AirQualityCard from "../components/AirQualityCard";
 import HistoryChart from "../components/HistoryChart";
-import { getCityPageTitle, getCityPageDescription, getStructuredDataCity } from "../utils/seo";
+import { getCityPageTitle, getCityPageDescription, getCityShareText, getStructuredDataCity } from "../utils/seo";
 
 const PollenMap = lazy(() => import("../components/PollenMap"));
 
@@ -76,6 +77,7 @@ export default function CityPage() {
         description={getCityPageDescription(city, data.pollen)}
         canonical={`https://copyli.pl/pylek/${city.slug}`}
         structuredData={getStructuredDataCity(city)}
+        ogImage={`https://copyli.pl/og/cities/${city.slug}.png`}
       />
 
       <div style={{ maxWidth:1080, margin:"0 auto", padding:"24px 16px 56px" }}>
@@ -91,12 +93,19 @@ export default function CityPage() {
 
         {/* Header */}
         <div className="anim-fade-up" style={{ marginBottom:28 }}>
-          <h1 style={{
-            fontFamily:"var(--font-display)", fontSize:"clamp(26px,4vw,36px)",
-            fontWeight:800, letterSpacing:"-0.03em", color:"var(--ink)", margin:"0 0 6px",
-          }}>
-            Pyłki w <span style={{ color:"var(--forest)" }}>{city.name}</span>
-          </h1>
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12, marginBottom:6 }}>
+            <h1 style={{
+              fontFamily:"var(--font-display)", fontSize:"clamp(26px,4vw,36px)",
+              fontWeight:800, letterSpacing:"-0.03em", color:"var(--ink)", margin:0,
+            }}>
+              Pyłki w <span style={{ color:"var(--forest)" }}>{city.name}</span>
+            </h1>
+            <ShareButton
+              title={`Pyłki w ${city.name} — CoPyli.pl`}
+              text={getCityShareText(city, data.pollen)}
+              url={`https://copyli.pl/pylek/${city.slug}`}
+            />
+          </div>
           {updatedAt && <p style={{ fontSize:12, color:"var(--ink-3)" }}>Dane z: {updatedAt}</p>}
           {city.seo_description && (
             <p style={{ fontSize:14, color:"var(--ink-2)", marginTop:8, lineHeight:1.6, maxWidth:640 }}>

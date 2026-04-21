@@ -19,6 +19,15 @@ export function getCityPageDescription(city: City, pollen: PollenData[]): string
   return `Aktualne stężenie pyłków w ${city.name} (${city.voivodeship_name}). Sprawdź co pyli, prognozę 5-dniową i Indeks Spacerowy. Dane dla alergików aktualizowane co 2 godziny.`;
 }
 
+export function getCityShareText(city: City, pollen: PollenData[]): string {
+  const active = pollen.filter(p => p.level !== "none" && p.level !== "low");
+  if (active.length > 0) {
+    const parts = active.slice(0, 3).map(p => `${p.plant_name} (${LEVEL_LABELS[p.level].toLowerCase()})`).join(", ");
+    return `Dziś w ${city.name}: ${parts}. Sprawdź pyłki w swoim mieście na CoPyli.pl`;
+  }
+  return `Aktualne stężenie pyłków w ${city.name} — sprawdź na CoPyli.pl`;
+}
+
 export function getVoivodeshipPageTitle(name: string): string {
   return `Pyłki w województwie ${name} — aktualna mapa pylenia | CoPyli.pl`;
 }
