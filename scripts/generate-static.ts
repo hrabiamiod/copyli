@@ -183,62 +183,52 @@ async function main() {
     if ((i + 1) % 200 === 0) console.log(`  ${i + 1}/${cities.length}...`);
   }
 
-  // 6. Historia pyłkowa (ostatnie 90 dni) — per miasto
-  console.log("Generowanie plików historii pyłkowej...");
-  const allHistory = d1Query(`
-    SELECT
-      c.slug as city_slug,
-      p.slug as plant_slug,
-      p.name_pl as plant_name,
-      p.category,
-      p.icon,
-      ph.date,
-      ph.concentration,
-      ph.level
-    FROM pollen_history ph
-    JOIN cities c ON ph.city_id = c.id
-    JOIN plants p ON ph.plant_id = p.id
-    WHERE ph.date >= date('now', '-90 days')
-    ORDER BY c.id, p.id, ph.date
-  `) as Array<{
-    city_slug: string;
-    plant_slug: string;
-    plant_name: string;
-    category: string;
-    icon: string;
-    date: string;
-    concentration: number;
-    level: string;
-  }>;
+  // 6. Historia pyłkowa (ostatnie 30 dni) — pobierana partiami per województwo
+  console.log("Generowanie plików historii pyłkowej (partie per województwo)...");
 
-  // Grupuj w pamięci: city_slug → plant_slug → entries[]
   type HistoryRow = { date: string; concentration: number; level: string };
   type PlantMeta = { plant_slug: string; plant_name: string; category: string; icon: string; data: HistoryRow[] };
-  const historyByCity = new Map<string, Map<string, PlantMeta>>();
-  for (const row of allHistory) {
-    if (!historyByCity.has(row.city_slug)) historyByCity.set(row.city_slug, new Map());
-    const plantMap = historyByCity.get(row.city_slug)!;
-    if (!plantMap.has(row.plant_slug)) {
-      plantMap.set(row.plant_slug, {
-        plant_slug: row.plant_slug,
-        plant_name: row.plant_name,
-        category: row.category,
-        icon: row.icon,
-        data: [],
-      });
-    }
-    plantMap.get(row.plant_slug)!.data.push({
-      date: row.date,
-      concentration: row.concentration,
-      level: row.level,
-    });
-  }
 
   let historyCount = 0;
-  for (const [citySlug, plantMap] of historyByCity) {
-    const payload = Array.from(plantMap.values());
-    writeJSON(`history/${citySlug}.json`, payload);
-    historyCount++;
+
+  for (const voiv of voivodeships as Array<{ slug: string }>) {
+    const batch = d1Query(`
+      SELECT
+        c.slug as city_slug,
+        p.slug as plant_slug,
+        p.name_pl as plant_name,
+        p.category,
+        p.icon,
+        ph.date,
+        ph.concentration,
+        ph.level
+      FROM pollen_history ph
+      JOIN cities c ON ph.city_id = c.id
+      JOIN voivodeships v ON c.voivodeship_id = v.id
+      JOIN plants p ON ph.plant_id = p.id
+      WHERE ph.date >= date('now', '-30 days')
+        AND v.slug = '${voiv.slug}'
+      ORDER BY c.id, p.id, ph.date
+    `) as Array<{
+      city_slug: string; plant_slug: string; plant_name: string;
+      category: string; icon: string; date: string;
+      concentration: number; level: string;
+    }>;
+
+    const byCity = new Map<string, Map<string, PlantMeta>>();
+    for (const row of batch) {
+      if (!byCity.has(row.city_slug)) byCity.set(row.city_slug, new Map());
+      const pm = byCity.get(row.city_slug)!;
+      if (!pm.has(row.plant_slug)) {
+        pm.set(row.plant_slug, { plant_slug: row.plant_slug, plant_name: row.plant_name, category: row.category, icon: row.icon, data: [] });
+      }
+      pm.get(row.plant_slug)!.data.push({ date: row.date, concentration: row.concentration, level: row.level });
+    }
+
+    for (const [citySlug, plantMap] of byCity) {
+      writeJSON(`history/${citySlug}.json`, Array.from(plantMap.values()));
+      historyCount++;
+    }
   }
   console.log(`  Zapisano historię dla ${historyCount} miast.`);
 
