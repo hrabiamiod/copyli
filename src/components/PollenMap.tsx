@@ -32,6 +32,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   const [geolocating, setGeolocating] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [showcase, setShowcase] = useState(showcaseMode);
+  const showcaseModeRef = useRef(showcaseMode);
 
   // Budujemy mapę voivodeship_slug → max_level dla kolorowania markerów
   const voivLevelMap = new Map<string, PollenLevel>();
@@ -195,6 +196,41 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         const city = cities.find(c => c.slug === highlightCitySlug);
         if (city) map.setView([city.lat, city.lon], 10);
       }
+
+      // Zastosuj showcase mode jeśli był aktywny przy ładowaniu
+      if (showcaseModeRef.current) {
+        map.removeLayer(tileLayerRef.current);
+        tileLayerRef.current = L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",
+          { attribution: '© OpenStreetMap © CARTO', subdomains: "abcd", maxZoom: 19 }
+        ).addTo(map);
+        tileLayerRef.current.bringToBack();
+
+        if (geojsonLayerRef.current) {
+          geojsonLayerRef.current.setStyle((feature: { properties?: { slug?: string } }) => {
+            const slug = feature?.properties?.slug as string;
+            const level = getVoivodeshipLevel(mapData, slug);
+            return { fillColor: getVoivodeshipFillColor(level), weight: 1, opacity: 0.4, color: "rgba(255,255,255,0.3)", fillOpacity: 0.45 };
+          });
+        }
+
+        const heatPoints = cities
+          .filter(c => c.lat >= 49 && c.lat <= 55 && c.lon >= 14 && c.lon <= 24.5)
+          .map(c => {
+            const levelKey = (cityLevels[c.slug] ?? "none") as string;
+            const intensity = LEVEL_HEAT[levelKey] ?? 0;
+            return [c.lat, c.lon, intensity] as [number, number, number];
+          })
+          .filter(([,, i]) => i > 0);
+
+        if (heatPoints.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          heatLayerRef.current = (L as any).heatLayer(heatPoints, {
+            radius: 35, blur: 30, maxZoom: 10,
+            gradient: { 0.25: "#52B788", 0.5: "#F4A261", 0.75: "#E76F51", 1.0: "#C1121F" },
+          }).addTo(map);
+        }
+      }
     };
 
     init();
@@ -206,6 +242,9 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
       }
     };
   }, []);
+
+  // Synchronizuj ref z propem
+  useEffect(() => { showcaseModeRef.current = showcaseMode; }, [showcaseMode]);
 
   // Reaguj na zewnętrzną zmianę showcaseMode (z panelu admina)
   useEffect(() => {
