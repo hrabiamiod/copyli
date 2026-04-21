@@ -57,6 +57,22 @@ export default function HomePage() {
   const [meta, setMeta] = useState<MetaData | null>(null);
   const [cityLevels, setCityLevels] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [showcaseMode, setShowcaseMode] = useState(() =>
+    localStorage.getItem("copyli_showcase") === "1"
+  );
+
+  // Nasłuchuj zmian showcase z panelu admina (storage event z innej karty lub bezpośrednio)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "copyli_showcase") setShowcaseMode(e.newValue === "1");
+    };
+    window.addEventListener("storage", onStorage);
+    // Polling co 2s — gdy admin zmienia w tej samej karcie
+    const iv = setInterval(() => {
+      setShowcaseMode(localStorage.getItem("copyli_showcase") === "1");
+    }, 2000);
+    return () => { window.removeEventListener("storage", onStorage); clearInterval(iv); };
+  }, []);
 
   // Dane spersonalizowane
   const [myAllergens, setMyAllergens] = useState<UserAllergen[]>([]);
@@ -143,7 +159,7 @@ export default function HomePage() {
               </div>
             }
           >
-            {!loading && <PollenMap cities={cities} mapData={mapData} cityLevels={cityLevels} />}
+            {!loading && <PollenMap cities={cities} mapData={mapData} cityLevels={cityLevels} showcaseMode={showcaseMode} />}
           </Suspense>
         </div>
 

@@ -177,6 +177,15 @@ export default function AdminPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showcase, setShowcase] = useState(() => localStorage.getItem('copyli_showcase') === '1');
+
+  const toggleShowcase = () => {
+    const next = !showcase;
+    setShowcase(next);
+    localStorage.setItem('copyli_showcase', next ? '1' : '0');
+    // Powiadom inne karty
+    window.dispatchEvent(new StorageEvent('storage', { key: 'copyli_showcase', newValue: next ? '1' : '0' }));
+  };
 
   useEffect(() => {
     apiFetch('/api/admin/stats').then(async res => {
@@ -260,6 +269,35 @@ export default function AdminPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Tryb prezentacji */}
+        <div style={{ background: 'var(--surface)', borderRadius: 12, padding: '18px 20px', boxShadow: 'var(--s-card)', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <p style={{ margin: '0 0 3px', fontSize: 14, fontWeight: 700, color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>
+              ✦ Tryb prezentacji mapy
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--ink-3)', lineHeight: 1.5 }}>
+              Ciemne tło + heatmapa pyłków. Widoczne na stronie głównej — przydatne do screenshotów reklamowych.
+            </p>
+          </div>
+          <button
+            onClick={toggleShowcase}
+            style={{
+              flexShrink: 0,
+              width: 52, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer',
+              background: showcase ? 'var(--forest)' : 'rgba(24,24,15,0.15)',
+              transition: 'background 0.25s', position: 'relative',
+            }}
+          >
+            <span style={{
+              position: 'absolute', top: 4,
+              left: showcase ? 26 : 4,
+              width: 20, height: 20, borderRadius: '50%', background: '#fff',
+              transition: 'left 0.25s', display: 'block',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+            }} />
+          </button>
         </div>
 
         {/* Cloudflare Runtime */}

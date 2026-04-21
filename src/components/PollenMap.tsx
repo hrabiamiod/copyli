@@ -14,9 +14,10 @@ interface PollenMapProps {
   onCityClick?: (city: City) => void;
   highlightCitySlug?: string;
   compact?: boolean;
+  showcaseMode?: boolean;
 }
 
-export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClick, highlightCitySlug, compact }: PollenMapProps) {
+export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClick, highlightCitySlug, compact, showcaseMode = false }: PollenMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,7 +31,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   const navigate = useNavigate();
   const [geolocating, setGeolocating] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
-  const [showcase, setShowcase] = useState(false);
+  const [showcase, setShowcase] = useState(showcaseMode);
 
   // Budujemy mapę voivodeship_slug → max_level dla kolorowania markerów
   const voivLevelMap = new Map<string, PollenLevel>();
@@ -206,12 +207,16 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     };
   }, []);
 
-  const toggleShowcase = useCallback(async () => {
+  // Reaguj na zewnętrzną zmianę showcaseMode (z panelu admina)
+  useEffect(() => {
+    if (showcaseMode !== showcase) applyShowcase(showcaseMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showcaseMode]);
+
+  const applyShowcase = useCallback(async (next: boolean) => {
     const map = mapInstanceRef.current;
     const L = leafletRef.current;
     if (!map || !L) return;
-
-    const next = !showcase;
     setShowcase(next);
 
     // Zmień tile layer
@@ -354,37 +359,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   return (
     <div className="relative w-full h-full">
       <div ref={mapRef} className="w-full h-full rounded-xl" />
-
-      {/* Showcase toggle — tylko na pełnej mapie */}
-      {!compact && (
-        <button
-          onClick={toggleShowcase}
-          title={showcase ? "Tryb normalny" : "Tryb prezentacji"}
-          style={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            zIndex: 1000,
-            background: showcase ? "#1B4332" : "rgba(255,255,255,0.95)",
-            border: showcase ? "1.5px solid rgba(255,255,255,0.25)" : "1.5px solid rgba(24,24,15,0.1)",
-            borderRadius: 10,
-            padding: "6px 12px",
-            fontSize: 12,
-            fontWeight: 700,
-            color: showcase ? "#fff" : "var(--ink)",
-            cursor: "pointer",
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            transition: "all 0.3s",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {showcase ? "✦" : "✦"} {showcase ? "Normalny" : "Prezentacja"}
-        </button>
-      )}
 
       {/* Geolocate button — tylko na pełnej mapie */}
       {!compact && (
