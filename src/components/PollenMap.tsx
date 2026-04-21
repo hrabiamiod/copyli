@@ -49,7 +49,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
 
     const init = async () => {
       L = (await import("leaflet")).default;
-      await import("leaflet.heat");
       leafletRef.current = L;
       delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
