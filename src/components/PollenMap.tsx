@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import type { City, MapData, PollenLevel } from "../types";
 import { getVoivodeshipLevel, getVoivodeshipFillColor, LEVEL_LABELS, LEVEL_COLORS } from "../utils/pollen";
+import { SHOWCASE_CITY_LEVELS } from "../utils/showcaseData";
 
 const LEVEL_HEAT: Record<string, number> = {
   none: 0, low: 0.25, medium: 0.5, high: 0.75, very_high: 1,
@@ -33,6 +34,11 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
   const [geoError, setGeoError] = useState<string | null>(null);
   const [showcase, setShowcase] = useState(showcaseMode);
   const showcaseModeRef = useRef(showcaseMode);
+
+  // W trybie prezentacji używamy demo-danych zamiast prawdziwych
+  const activeLevels = showcase ? SHOWCASE_CITY_LEVELS : cityLevels;
+  const activeLevelsRef = useRef(activeLevels);
+  useEffect(() => { activeLevelsRef.current = activeLevels; }, [activeLevels]);
 
   // Budujemy mapę voivodeship_slug → max_level dla kolorowania markerów
   const voivLevelMap = new Map<string, PollenLevel>();
@@ -119,7 +125,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
       };
 
       const createMarker = (city: City) => {
-        const level = (cityLevels[city.slug] ?? voivLevelMap.get(city.voivodeship_slug) ?? "none") as PollenLevel;
+        const level = (activeLevelsRef.current[city.slug] ?? voivLevelMap.get(city.voivodeship_slug) ?? "none") as PollenLevel;
         const color = LEVEL_COLORS[level];
         const isHighlighted = city.slug === highlightCitySlug;
         const size = getSize(city);
@@ -217,7 +223,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         const heatPoints = cities
           .filter(c => c.lat >= 49 && c.lat <= 55 && c.lon >= 14 && c.lon <= 24.5)
           .map(c => {
-            const levelKey = (cityLevels[c.slug] ?? "none") as string;
+            const levelKey = (SHOWCASE_CITY_LEVELS[c.slug] ?? "none") as string;
             const intensity = LEVEL_HEAT[levelKey] ?? 0;
             return [c.lat, c.lon, intensity] as [number, number, number];
           })
@@ -290,11 +296,12 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     }
 
     if (next) {
+      const levels = next ? SHOWCASE_CITY_LEVELS : cityLevels;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const heatPoints = cities
         .filter(c => c.lat >= 49 && c.lat <= 55 && c.lon >= 14 && c.lon <= 24.5)
         .map(c => {
-          const levelKey = (cityLevels[c.slug] ?? "none") as string;
+          const levelKey = (levels[c.slug] ?? "none") as string;
           const intensity = LEVEL_HEAT[levelKey] ?? 0;
           return [c.lat, c.lon, intensity] as [number, number, number];
         })
