@@ -13,6 +13,9 @@ export default defineConfig({
     __BUILD_DATE__: JSON.stringify(new Date().toISOString().substring(0, 10)),
   },
   plugins: [react()],
+  optimizeDeps: {
+    include: ["leaflet.heat"],
+  },
   build: {
     rollupOptions: {
       output: {

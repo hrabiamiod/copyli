@@ -49,6 +49,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
 
     const init = async () => {
       L = (await import("leaflet")).default;
+      await import("leaflet.heat");
       leafletRef.current = L;
       delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 
@@ -251,7 +252,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     }
 
     if (next) {
-      await import("leaflet.heat");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const heatPoints = cities
         .filter(c => c.lat >= 49 && c.lat <= 55 && c.lon >= 14 && c.lon <= 24.5)
