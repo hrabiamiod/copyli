@@ -154,6 +154,42 @@ export default function CityPage() {
               </div>
             )}
 
+            {/* FAQ per miasto */}
+            <div className="card anim-fade-up delay-3" style={{ padding:"20px 22px" }}>
+              <h2 style={{
+                fontFamily:"var(--font-display)", fontSize:16, fontWeight:700,
+                color:"var(--ink)", margin:"0 0 16px", letterSpacing:"-0.02em",
+              }}>
+                Najczęstsze pytania — pyłki w {city.name}
+              </h2>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {[
+                  {
+                    q: `Co pyli dziś w ${city.name}?`,
+                    a: data.pollen.filter(p => p.level !== "none").length > 0
+                      ? `Dziś w ${city.name} pylą: ${data.pollen.filter(p => p.level !== "none").slice(0,3).map(p => `${p.plant_name} (${p.level === "very_high" ? "bardzo wysokie" : p.level === "high" ? "wysokie" : p.level === "medium" ? "średnie" : "niskie"})`).join(", ")}.`
+                      : `Aktualnie stężenie pyłków w ${city.name} jest niskie lub nie ma aktywnych alergenów.`,
+                  },
+                  {
+                    q: `Kiedy jest sezon pyłkowy w ${city.name}?`,
+                    a: `Sezon pyłkowy w ${city.name} (${city.voivodeship_name}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik).`,
+                  },
+                  {
+                    q: `Skąd pochodzą dane pyłkowe dla ${city.name}?`,
+                    a: `Dane dla ${city.name} pochodzą z Open-Meteo Air Quality API i są aktualizowane co 2 godziny.`,
+                  },
+                ].map(({ q, a }) => (
+                  <details key={q} className="faq-item">
+                    <summary style={{ fontSize:14 }}>
+                      {q}
+                      <span className="faq-chevron">▾</span>
+                    </summary>
+                    <div className="faq-body" style={{ fontSize:13 }}>{a}</div>
+                  </details>
+                ))}
+              </div>
+            </div>
+
             {/* Mini map */}
             <div className="anim-fade-up delay-3">
               <p className="label" style={{ marginBottom:8 }}>Mapa — {city.name} i okolice</p>

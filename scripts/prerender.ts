@@ -97,14 +97,16 @@ function injectMeta(html: string, opts: {
   canonical: string;
   ogImage?: string;
   structuredData?: object;
+  extraStructuredData?: object;
   bodyHtml?: string;
 }): string {
-  const { title, description, canonical, ogImage, structuredData, bodyHtml } = opts;
+  const { title, description, canonical, ogImage, structuredData, extraStructuredData, bodyHtml } = opts;
   const image = ogImage ?? "https://copyli.pl/og-default.png";
 
-  const ldJson = structuredData
-    ? `\n  <script type="application/ld+json">${JSON.stringify(structuredData)}</script>`
-    : "";
+  const ldJson = [
+    structuredData ? `\n  <script type="application/ld+json">${JSON.stringify(structuredData)}</script>` : "",
+    extraStructuredData ? `\n  <script type="application/ld+json">${JSON.stringify(extraStructuredData)}</script>` : "",
+  ].join("");
 
   const ogTags = `
   <meta property="og:title" content="${esc(title)}" />
@@ -185,6 +187,40 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
       ).join("")
     : `<tr><td colspan="3" style="padding:8px 12px;color:#6b7280">Brak aktywnych alergenów</td></tr>`;
 
+  // FAQ per miasto — dynamiczne pytania z danych pyłkowych
+  const faqActiveList = activePollen.slice(0, 3).map(p => `${p.plant_name} (${LEVEL_LABELS[p.level]})`).join(", ");
+  const faqPollenAnswer = activePollen.length > 0
+    ? `Dziś w ${city.name} pylą: ${faqActiveList}. Dane są aktualizowane co 2 godziny.`
+    : `Aktualnie stężenie pyłków w ${city.name} jest niskie lub nie ma aktywnych alergenów.`;
+  const faqItems = [
+    {
+      q: `Co pyli dziś w ${city.name}?`,
+      a: faqPollenAnswer,
+    },
+    {
+      q: `Kiedy jest sezon pyłkowy w ${city.name}?`,
+      a: `Sezon pyłkowy w ${city.name} (${city.voivodeship_name}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik).`,
+    },
+    {
+      q: `Skąd pochodzą dane pyłkowe dla ${city.name}?`,
+      a: `Dane pyłkowe dla ${city.name} (${city.voivodeship_name}) pochodzą z Open-Meteo Air Quality API i są aktualizowane co 2 godziny. Obejmują stężenia pyłków dla ponad 1000 polskich miast.`,
+    },
+  ];
+  const faqHtml = faqItems.map(({ q, a }) => `
+    <div style="border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:8px">
+      <h3 style="font-size:1rem;font-weight:600;color:#111827;margin:0 0 8px">${esc(q)}</h3>
+      <p style="font-size:0.875rem;color:#4b5563;margin:0;line-height:1.6">${esc(a)}</p>
+    </div>`).join("");
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqItems.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+
   // Inne miasta w tym samym województwie (max 8 — wewnętrzne linkowanie)
   const siblingCities = allCities
     .filter(c => c.voivodeship_slug === city.voivodeship_slug && c.slug !== city.slug)
@@ -216,7 +252,11 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
   </table>
   ${siblingLinks ? `<p style="color:#6b7280;font-size:0.875rem;margin-bottom:8px">Inne miasta w województwie ${city.voivodeship_name}:</p>
   <ul style="list-style:none;padding:0;margin-bottom:16px">${siblingLinks}</ul>` : ""}
-  <p style="color:#6b7280;font-size:0.875rem">
+  <section style="margin-top:32px">
+    <h2 style="font-size:1.25rem;font-weight:600;color:#111827;margin-bottom:16px">Najczęstsze pytania — pyłki w ${city.name}</h2>
+    ${faqHtml}
+  </section>
+  <p style="color:#6b7280;font-size:0.875rem;margin-top:24px">
     Dane pyłkowe dla ${city.name} (${city.voivodeship_name}) aktualizowane co 2 godziny na podstawie modelu Open-Meteo.
     Współrzędne: ${city.lat.toFixed(4)}°N, ${city.lon.toFixed(4)}°E.
   </p>
@@ -250,7 +290,7 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
     } : undefined,
   };
 
-  const html = injectMeta(template, { title, description, canonical, ogImage, structuredData, bodyHtml });
+  const html = injectMeta(template, { title, description, canonical, ogImage, structuredData, extraStructuredData: faqStructuredData, bodyHtml });
   const outDir = path.join(DIST, "pylek");
   await fs.promises.mkdir(outDir, { recursive: true });
   await fs.promises.writeFile(path.join(outDir, `${city.slug}.html`), html);
