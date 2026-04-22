@@ -7,10 +7,42 @@ import satori from "satori";
 import sharp from "sharp";
 import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
+import { createHash } from "crypto";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
 const BATCH_SIZE = 20;
+
+// ─── Hash-based cache ─────────────────────────────────────────────────────────
+
+type HashStore = Record<string, string>;
+
+function getTemplateHash(): string {
+  try {
+    const content = readFileSync(join(process.cwd(), "scripts", "generate-og-images-cities.ts"));
+    return createHash("sha1").update(content).digest("hex").slice(0, 12);
+  } catch {
+    return Date.now().toString(36); // nieznany template → wymuś pełną regenerację
+  }
+}
+
+const TEMPLATE_HASH = getTemplateHash();
+
+function cityHash(rawData: string): string {
+  return createHash("sha1").update(rawData + TEMPLATE_HASH).digest("hex").slice(0, 12);
+}
+
+function loadHashes(outDir: string): HashStore {
+  try {
+    return JSON.parse(readFileSync(join(outDir, ".hashes.json"), "utf-8"));
+  } catch {
+    return {};
+  }
+}
+
+function saveHashes(outDir: string, hashes: HashStore): void {
+  writeFileSync(join(outDir, ".hashes.json"), JSON.stringify(hashes));
+}
 
 function woff(p: string): ArrayBuffer {
   return readFileSync(join(process.cwd(), p)).buffer as ArrayBuffer;
@@ -250,11 +282,26 @@ function buildElement(city: City, active: PollenEntry[]) {
   };
 }
 
-async function renderCity(city: City, active: PollenEntry[], outDir: string): Promise<void> {
+async function renderCity(
+  city: City,
+  active: PollenEntry[],
+  rawData: string,
+  outDir: string,
+  hashes: HashStore,
+): Promise<boolean> {
+  const hash = cityHash(rawData);
+  const pngPath = join(outDir, `${city.slug}.png`);
+
+  if (hashes[city.slug] === hash && existsSync(pngPath)) {
+    return false; // cache hit
+  }
+
   const el = buildElement(city, active);
   const svg = await satori(el as Parameters<typeof satori>[0], { width: WIDTH, height: HEIGHT, fonts: FONTS });
   const png = await sharp(Buffer.from(svg)).png().toBuffer();
-  writeFileSync(join(outDir, `${city.slug}.png`), png);
+  writeFileSync(pngPath, png);
+  hashes[city.slug] = hash;
+  return true;
 }
 
 async function main() {
@@ -263,29 +310,37 @@ async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
 
   const cities: City[] = JSON.parse(readFileSync(join(DATA, "cities.json"), "utf-8"));
-  console.log(`🖼️  Generowanie OG images dla ${cities.length} miast...`);
+  const hashes = loadHashes(OUT_DIR);
 
-  let done = 0;
+  console.log(`🖼️  OG images: ${cities.length} miast (template: ${TEMPLATE_HASH}, cache: ${Object.keys(hashes).length} wpisów)...`);
+
+  let rendered = 0;
+  let skipped  = 0;
+
   for (let i = 0; i < cities.length; i += BATCH_SIZE) {
     const batch = cities.slice(i, i + BATCH_SIZE);
     await Promise.all(batch.map(async (city) => {
       let active: PollenEntry[] = [];
+      let rawData = "{}";
       const dataPath = join(DATA, "cities", `${city.slug}.json`);
       if (existsSync(dataPath)) {
         try {
-          const d: CityData = JSON.parse(readFileSync(dataPath, "utf-8"));
+          rawData = readFileSync(dataPath, "utf-8");
+          const d: CityData = JSON.parse(rawData);
           active = (d.pollen ?? [])
             .filter(p => p.level !== "none")
             .sort((a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level));
         } catch { /* skip */ }
       }
-      await renderCity(city, active, OUT_DIR);
+      const didRender = await renderCity(city, active, rawData, OUT_DIR, hashes);
+      if (didRender) rendered++; else skipped++;
     }));
-    done += batch.length;
-    process.stdout.write(`  ${done}/${cities.length}\r`);
+    // Zapisz po każdym batchu — zachowanie postępu przy przerwaniu
+    saveHashes(OUT_DIR, hashes);
+    process.stdout.write(`  ${rendered + skipped}/${cities.length} (wygenerowano: ${rendered}, z cache: ${skipped})\r`);
   }
 
-  console.log(`\n✅ Wygenerowano ${cities.length} OG images → public/og/cities/`);
+  console.log(`\n✅ OG images gotowe: ${rendered} wygenerowanych, ${skipped} z cache → public/og/cities/`);
 }
 
 main().catch(console.error);

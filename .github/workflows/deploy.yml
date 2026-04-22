@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
 
+# Serializuje deploye — zapobiega wyścigowi między push a cronem
+concurrency:
+  group: cf-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,15 +27,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate static JSON from D1 (świeże dane pyłkowe)
-        run: npx tsx scripts/generate-static.ts
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+      # Faza 1: cache OG images między deployami
+      - name: Restore OG images cache
+        uses: actions/cache@v4
+        with:
+          path: public/og/cities
+          key: og-v1-${{ github.sha }}
+          restore-keys: og-v1-
 
-      - name: Generate sitemap
-        run: npx tsx scripts/generate-sitemap.ts
+      # Faza 2: cache Vite dependency pre-bundling
+      - name: Restore Vite cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-v1-${{ hashFiles('vite.config.*', 'package-lock.json') }}
+          restore-keys: vite-v1-
+
+      # Faza 2: generate-static + generate-sitemap (I/O-bound D1) równolegle z tsc-b (CPU-bound)
+      - name: Prepare data and type-check (parallel)
+        run: |
+          npx tsx scripts/generate-static.ts &
+          PID_STATIC=$!
+          npx tsx scripts/generate-sitemap.ts &
+          PID_SITEMAP=$!
+          npx tsc -b
+          TSC_EXIT=$?
+          wait $PID_STATIC; STATIC_EXIT=$?
+          wait $PID_SITEMAP; SITEMAP_EXIT=$?
+          [ $TSC_EXIT    -ne 0 ] && exit $TSC_EXIT
+          [ $STATIC_EXIT -ne 0 ] && exit $STATIC_EXIT
+          exit $SITEMAP_EXIT
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

@@ -7,6 +7,10 @@ on:
   workflow_dispatch:
     # Możliwość ręcznego uruchomienia
 
+concurrency:
+  group: cf-deploy
+  cancel-in-progress: false
+
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
@@ -25,6 +29,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Restore OG images cache
+        uses: actions/cache@v4
+        with:
+          path: public/og/cities
+          key: og-v1-${{ github.sha }}
+          restore-keys: og-v1-
+
+      - name: Restore Vite cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-v1-${{ hashFiles('vite.config.*', 'package-lock.json') }}
+          restore-keys: vite-v1-
+
       - name: Fetch pollen data from Open-Meteo → D1
         run: |
           set -o pipefail
@@ -41,17 +59,21 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
 
-      - name: Generate static JSON files
+      # Faza 2: generate-static + generate-sitemap (I/O D1) równolegle z tsc-b (CPU)
+      # /tmp/generate-static.log zachowany dla kroku ntfy poniżej
+      - name: Prepare data and type-check (parallel)
         run: |
-          set -o pipefail
-          npx tsx scripts/generate-static.ts 2>&1 | tee /tmp/generate-static.log
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
-
-      - name: Generate sitemap.xml
-        run: npx tsx scripts/generate-sitemap.ts
+          npx tsx scripts/generate-static.ts &>/tmp/generate-static.log &
+          PID_STATIC=$!
+          npx tsx scripts/generate-sitemap.ts &
+          PID_SITEMAP=$!
+          npx tsc -b
+          TSC_EXIT=$?
+          wait $PID_STATIC; STATIC_EXIT=$?
+          wait $PID_SITEMAP; SITEMAP_EXIT=$?
+          [ $TSC_EXIT    -ne 0 ] && exit $TSC_EXIT
+          [ $STATIC_EXIT -ne 0 ] && exit $STATIC_EXIT
+          exit $SITEMAP_EXIT
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

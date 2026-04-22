@@ -157,8 +157,13 @@ function levelBadge(level: string): string {
 
 // ─── Generowanie stron miast ───────────────────────────────────────────────
 
-function generateCityPage(city: City, allCities: City[]): void {
-  const cityData = readJson<CityData>(path.join(DATA, "cities", `${city.slug}.json`));
+async function generateCityPageAsync(city: City, allCities: City[]): Promise<void> {
+  let cityData: CityData | null = null;
+  try {
+    const raw = await fs.promises.readFile(path.join(DATA, "cities", `${city.slug}.json`), "utf-8");
+    cityData = JSON.parse(raw) as CityData;
+  } catch { /* brak danych */ }
+
   const pollen = cityData?.pollen ?? [];
   const activePollen = pollen.filter(p => p.level !== "none");
   const highPollen = pollen.filter(p => p.level === "high" || p.level === "very_high");
@@ -247,8 +252,8 @@ function generateCityPage(city: City, allCities: City[]): void {
 
   const html = injectMeta(template, { title, description, canonical, ogImage, structuredData, bodyHtml });
   const outDir = path.join(DIST, "pylek");
-  ensureDir(outDir);
-  fs.writeFileSync(path.join(outDir, `${city.slug}.html`), html);
+  await fs.promises.mkdir(outDir, { recursive: true });
+  await fs.promises.writeFile(path.join(outDir, `${city.slug}.html`), html);
 }
 
 // ─── Generowanie stron województw ─────────────────────────────────────────
@@ -484,11 +489,12 @@ async function main() {
   }
 
   console.log(`🌸 Pre-renderowanie ${cities.length} stron miast...`);
+  const CITY_BATCH = 50;
   let done = 0;
-  for (const city of cities) {
-    generateCityPage(city, cities);
-    done++;
-    if (done % 100 === 0) process.stdout.write(`  ${done}/${cities.length}\r`);
+  for (let i = 0; i < cities.length; i += CITY_BATCH) {
+    await Promise.all(cities.slice(i, i + CITY_BATCH).map(city => generateCityPageAsync(city, cities)));
+    done += Math.min(CITY_BATCH, cities.length - i);
+    process.stdout.write(`  ${done}/${cities.length}\r`);
   }
   console.log(`  ✅ Wygenerowano ${cities.length} stron miast`);
 
