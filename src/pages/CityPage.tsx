@@ -194,6 +194,21 @@ export default function CityPage() {
                 compact
                 onSelect={c => navigate(`/porownaj/${city.slug}/${c.slug}`)}
               />
+              {nearbyCities.length > 0 && (
+                <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(24,24,15,0.07)", display:"flex", flexDirection:"column", gap:2 }}>
+                  {nearbyCities.slice(0, 3).map(c => (
+                    <Link
+                      key={c.slug}
+                      to={`/porownaj/${city.slug}/${c.slug}`}
+                      style={{ fontSize:12, color:"var(--ink-2)", textDecoration:"none", padding:"4px 6px", borderRadius:"var(--r-xs)", transition:"color 0.12s" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "var(--forest)")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "var(--ink-2)")}
+                    >
+                      {city.name} vs {c.name} →
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
             {nearbyCities.length > 0 && (

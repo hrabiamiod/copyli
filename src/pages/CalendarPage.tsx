@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { Plant } from "../types";
 import SEOHead from "../components/SEOHead";
 import { CATEGORY_LABELS } from "../utils/pollen";
+import { getStructuredDataCalendar } from "../utils/seo";
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 
@@ -25,9 +26,10 @@ export default function CalendarPage() {
   return (
     <>
       <SEOHead
-        title="Kalendarz pylenia roślin w Polsce — kiedy co pyli? | CoPyli.pl"
+        title={`Kalendarz pylenia roślin w Polsce ${new Date().getFullYear()} — kiedy co pyli? | CoPyli.pl`}
         description="Interaktywny kalendarz pylenia roślin w Polsce. Sprawdź kiedy pylą drzewa (brzoza, olcha), trawy i chwasty (ambrozja, bylica). Daty sezonów pyłkowych dla alergików."
         canonical="https://copyli.pl/kalendarz-pylenia"
+        structuredData={getStructuredDataCalendar(new Date().getFullYear())}
       />
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px 48px" }}>

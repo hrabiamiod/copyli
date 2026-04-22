@@ -1,4 +1,4 @@
-import type { City, PollenData } from "../types";
+import type { City, Plant, PollenData } from "../types";
 import { LEVEL_LABELS } from "./pollen";
 
 export function getCityPageTitle(city: City, pollen: PollenData[]): string {
@@ -100,6 +100,62 @@ export function getStructuredDataVoivodeship(slug: string, name: string, cityCou
         { "@type": "ListItem", "position": 2, "name": `Województwo ${name}`, "item": `https://copyli.pl/pylek/woj/${slug}` },
       ]
     }
+  };
+}
+
+export function getStructuredDataPlant(plant: Plant): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["WebPage", "Article"],
+    "name": `${plant.name_pl} — kiedy pyli, alergia i stężenie w Polsce`,
+    "description": `Sezon pylenia ${plant.name_pl} (${plant.name_latin}) w Polsce. Aktualne stężenia w województwach, reaktywność krzyżowa i wskazówki dla alergików.`,
+    "url": `https://copyli.pl/pylek/roslina/${plant.slug}`,
+    "about": {
+      "@type": "Thing",
+      "name": plant.name_pl,
+      "alternateName": plant.name_latin,
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "CoPyli.pl",
+      "url": "https://copyli.pl",
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://copyli.pl" },
+        { "@type": "ListItem", "position": 2, "name": "Kalendarz pylenia", "item": "https://copyli.pl/kalendarz-pylenia" },
+        { "@type": "ListItem", "position": 3, "name": plant.name_pl, "item": `https://copyli.pl/pylek/roslina/${plant.slug}` },
+      ],
+    },
+  };
+}
+
+export function getStructuredDataCalendar(year: number): object {
+  return {
+    "@context": "https://schema.org",
+    "@type": ["WebPage", "Dataset"],
+    "name": `Kalendarz pylenia roślin w Polsce ${year}`,
+    "description": `Interaktywny kalendarz pylenia roślin w Polsce ${year}. Sezony pylenia drzew (brzoza, olcha, jesion), traw (tymotka, życica) i chwastów (ambrozja, bylica). Dane dla alergików.`,
+    "url": "https://copyli.pl/kalendarz-pylenia",
+    "temporalCoverage": `${year}`,
+    "spatialCoverage": {
+      "@type": "Country",
+      "name": "Polska",
+      "sameAs": "https://www.wikidata.org/wiki/Q36",
+    },
+    "creator": {
+      "@type": "Organization",
+      "name": "CoPyli.pl",
+      "url": "https://copyli.pl",
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://copyli.pl" },
+        { "@type": "ListItem", "position": 2, "name": "Kalendarz pylenia", "item": "https://copyli.pl/kalendarz-pylenia" },
+      ],
+    },
   };
 }
 

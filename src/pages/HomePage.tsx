@@ -67,11 +67,7 @@ export default function HomePage() {
       if (e.key === "copyli_showcase") setShowcaseMode(e.newValue === "1");
     };
     window.addEventListener("storage", onStorage);
-    // Polling co 2s — gdy admin zmienia w tej samej karcie
-    const iv = setInterval(() => {
-      setShowcaseMode(localStorage.getItem("copyli_showcase") === "1");
-    }, 2000);
-    return () => { window.removeEventListener("storage", onStorage); clearInterval(iv); };
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   // Dane spersonalizowane

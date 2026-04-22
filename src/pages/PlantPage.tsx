@@ -4,77 +4,11 @@ import type { Plant, MapData, PollenLevel } from "../types";
 import SEOHead from "../components/SEOHead";
 import PollenBadge from "../components/PollenBadge";
 import { CATEGORY_LABELS, LEVEL_COLORS, CATEGORY_ICONS } from "../utils/pollen";
+import { PLANT_INFO, CROSS } from "../utils/plant-info";
+import { getStructuredDataPlant } from "../utils/seo";
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 const LEVEL_ORDER: PollenLevel[] = ["none", "low", "medium", "high", "very_high"];
-
-// Reaktywność krzyżowa — slug → lista powiązanych roślin
-const CROSS: Record<string, { name: string; slug: string }[]> = {
-  alder:   [{ name: "Brzoza", slug: "birch" }, { name: "Leszczyna", slug: "hazel" }],
-  birch:   [{ name: "Olcha", slug: "alder" }, { name: "Leszczyna", slug: "hazel" }, { name: "Jabłoń", slug: "apple" }],
-  hazel:   [{ name: "Olcha", slug: "alder" }, { name: "Brzoza", slug: "birch" }],
-  mugwort: [{ name: "Ambrozja", slug: "ragweed" }],
-  ragweed: [{ name: "Bylica", slug: "mugwort" }],
-  rye:     [{ name: "Trawy", slug: "grass" }],
-  grass:   [{ name: "Żyto", slug: "rye" }],
-};
-
-// Statyczne opisy i wskazówki per roślina
-const PLANT_INFO: Record<string, { info: string; tips: string[] }> = {
-  birch: {
-    info: "Brzoza jest jednym z najsilniejszych alergenów w Polsce — uczula ok. 20% populacji. Główne białko alergenne Bet v 1 odpowiada za silną reaktywność krzyżową z innymi drzewami i owocami pestkowymi. Pyłek brzozy może przenosić się nawet na setki kilometrów.",
-    tips: [
-      "Obserwuj prognozy pyłkowe od marca — w ciepłe wiosny brzoza kwitnie wcześniej",
-      "Reaktywność krzyżowa z jabłkami, gruszkami, wiśniami, brzoskwiniami i orzechami",
-      "W szczycie sezonu (kwiecień–maj) ogranicz wietrzenie w godzinach 10–16",
-      "Po powrocie z zewnątrz zmień ubranie i umyj twarz",
-    ],
-  },
-  alder: {
-    info: "Olcha to jeden z pierwszych alergenów sezonu pyłkowego — pyli już w lutym, kiedy inne rośliny jeszcze śpią. Jej pyłek jest szczególnie uciążliwy w ciepłe, bezśnieżne zimy i może zaskakiwać alergików nieprzygotowanych po zimowej przerwie.",
-    tips: [
-      "Sezon zaczyna się już w lutym — zaopatrz się w leki przed końcem stycznia",
-      "Reaktywność krzyżowa z brzozą i leszczyną",
-      "Pyłek olchy wylatuje głównie między godz. 10 a 14 w słoneczne dni",
-      "Deszcz znacząco obniża stężenia — planuj aktywności na pochmurne lub mokre dni",
-    ],
-  },
-  hazel: {
-    info: "Leszczyna to najwcześniejszy alergen w Polsce — może pylić już w styczniu w ciepłe zimy, szczególnie na południu kraju. Jej pyłek, choć mniej alergizujący niż pyłek brzozy, często otwiera sezon i uwrażliwia układ odpornościowy.",
-    tips: [
-      "Monitoruj prognozy od stycznia — w ciepłe zimy stężenia mogą być zaskakująco wysokie",
-      "Reaktywność krzyżowa z brzozą i olchą",
-      "Leszczyna rośnie m.in. na skrajach lasów i w ogrodach — unikaj tych miejsc wczesną wiosną",
-    ],
-  },
-  grass: {
-    info: "Alergia na trawy to najczęstsza alergia pyłkowa w Polsce — dotyczy ok. 30% alergików. Sezon jest długi (maj–wrzesień) z wyraźnym szczytem w czerwcu i lipcu. Główne alergeny to tymotka, kupkówka i życica.",
-    tips: [
-      "Unikaj przebywania na łąkach i polach w południe — stężenia są wtedy najwyższe",
-      "Po powrocie z zewnątrz przebierz się i umyj włosy — pyłek mocno osiada na ubraniu i włosach",
-      "Kośmy trawnik przed zakwitnięciem — krótkie trawy pylą mniej",
-      "Leki antyhistaminowe zacznij brać 1–2 tygodnie przed spodziewanym szczytem",
-    ],
-  },
-  ragweed: {
-    info: "Ambrozja (Ambrosia artemisiifolia) to inwazyjna roślina z Ameryki Północnej — jeden z najgroźniejszych alergenów w Europie. Nawet 10 ziaren pyłku/m³ wystarcza do wywołania objawów. Zasięg ambrozji w Polsce stale się powiększa, głównie w dolinie Wisły i na południu.",
-    tips: [
-      "Sezon sierpień–wrzesień — zaplanuj urlop z dala od zachwaszczonych terenów",
-      "Reaktywność krzyżowa z bylicą, słonecznikiem i bananem",
-      "Ambrozja rośnie na nieużytkach, nasypy kolejowe i pobocza dróg — omijaj je",
-      "Stężenia są najwyższe w ciepłe, suche wieczory",
-    ],
-  },
-  mugwort: {
-    info: "Bylica pospolita (Artemisia vulgaris) pyli od lipca do września. Jej alergeny (Art v 1, Art v 3) są zbliżone do alergenów ambrozji, co prowadzi do częstej reaktywności krzyżowej. Bylica jest wyjątkowo odporna i rośnie wszędzie — od ogrodów po pobocza autostrad.",
-    tips: [
-      "Unikaj terenów nieużytków i nasypów kolejowych — tam bylica rośnie najgęściej",
-      "Reaktywność krzyżowa z ambrozją, kolendrą, kminem i papryką",
-      "Pyłek bylicy jest aktywny głównie w godzinach wieczornych i nocnych",
-      "Nie wynoś świeżych ziół z rodziny astrowatych do domu w szczycie sezonu",
-    ],
-  },
-};
 
 export default function PlantPage() {
   const { roslina } = useParams<{ roslina: string }>();
@@ -142,6 +76,7 @@ export default function PlantPage() {
         title={title}
         description={description}
         canonical={`https://copyli.pl/pylek/roslina/${roslina}`}
+        structuredData={getStructuredDataPlant(plant)}
       />
 
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 56px", display: "flex", flexDirection: "column", gap: 24 }}>
