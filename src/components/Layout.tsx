@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Nav */}
           <nav className="hidden md:flex items-center" style={{ gap: 2 }}>
-            {[{ to: "/", label: "Mapa" }, { to: "/pylek/rosliny", label: "Rośliny" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }].map(({ to, label }) => (
+            {[{ to: "/", label: "Mapa" }, { to: "/pylek/rosliny", label: "Rośliny" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }, { to: "/porady/alergia-na-pylek", label: "Porady" }].map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
@@ -121,7 +121,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-7">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-x-6 gap-y-7">
 
             <div>
               <p style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 14, color: "var(--forest)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
@@ -147,8 +147,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 prefix: "/pylek/",
               },
               {
+                title: "Porady",
+                links: [["Alergia na pyłki","porady/alergia-na-pylek"],["Sezon pyłkowy 2026","porady/sezon-pylkowy-2026"],["Reaktywność krzyżowa","porady/reaktywnosc-krzyzowa"],["Kalendarz pylenia","kalendarz-pylenia"],["Rośliny pylące","pylek/rosliny"]] as [string,string][],
+                prefix: "/",
+              },
+              {
                 title: "Informacje",
-                links: [["Rośliny pylące","pylek/rosliny"],["Kalendarz pylenia","kalendarz-pylenia"],["Regulamin","regulamin"],["Polityka prywatności","polityka-prywatnosci"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
+                links: [["Regulamin","regulamin"],["Polityka prywatności","polityka-prywatnosci"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
                 prefix: "/",
               },
             ].map(({ title, links, prefix }) => (

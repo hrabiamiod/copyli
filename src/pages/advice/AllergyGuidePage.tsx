@@ -74,6 +74,14 @@ export default function AllergyGuidePage() {
           </p>
         </div>
 
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.4)", borderRadius: "var(--r-md)", padding: "14px 18px", marginBottom: 20 }}>
+          <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚕️</span>
+          <p style={{ fontSize: 13, color: "var(--ink-2)", lineHeight: 1.65, margin: 0 }}>
+            <strong style={{ color: "var(--ink)" }}>Ważne:</strong> Treści na tej stronie mają charakter wyłącznie informacyjny i <strong style={{ color: "var(--ink)" }}>nie zastępują wizyty u lekarza ani porady medycznej.</strong>{" "}
+            W przypadku objawów alergicznych skonsultuj się z alergologiem lub lekarzem pierwszego kontaktu.
+          </p>
+        </div>
+
         <div style={{ background: "rgba(27,67,50,0.06)", border: "1px solid rgba(27,67,50,0.12)", borderRadius: "var(--r-md)", padding: "16px 20px", marginBottom: 32 }}>
           <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.7, margin: 0 }}>
             W Polsce na alergię pyłkową cierpi szacunkowo <strong style={{ color: "var(--ink)" }}>10–20% populacji</strong>.
