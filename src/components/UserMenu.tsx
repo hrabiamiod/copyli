@@ -42,7 +42,7 @@ export default function UserMenu() {
 
   if (!user) {
     return (
-      <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+      <div className="hidden md:flex" style={{ gap: 6, marginLeft: 'auto' }}>
         <Link
           to="/logowanie"
           style={{
@@ -92,11 +92,11 @@ export default function UserMenu() {
         onMouseLeave={e => { if (!open) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
       >
         <Avatar user={user} />
-        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span className="hidden md:inline" style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {user.name ?? user.email.split('@')[0]}
         </span>
         {user.badges.slice(0, 2).map(b => (
-          <span key={b.id} style={{
+          <span key={b.id} className="hidden md:inline" style={{
             fontSize: 10, fontWeight: 700, color: b.color,
             background: b.bg, border: `1px solid ${b.color}33`,
             borderRadius: 6, padding: '1px 5px',

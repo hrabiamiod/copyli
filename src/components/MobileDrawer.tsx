@@ -95,7 +95,7 @@ export default function MobileDrawer({ open, onClose }: { open: boolean; onClose
             </Link>
           ) : (
             <Link
-              to="/login"
+              to="/logowanie"
               style={{ display:"block", padding:"11px 12px", borderRadius:10, fontSize:14, fontWeight:600, color:"var(--forest)", textDecoration:"none" }}
             >
               Zaloguj się →
