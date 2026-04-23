@@ -1,22 +1,13 @@
 import type { City, Plant, PollenData } from "../types";
 import { LEVEL_LABELS } from "./pollen";
+import { buildCityTitle, buildCityDescription } from "./cityTitle";
 
 export function getCityPageTitle(city: City, pollen: PollenData[]): string {
-  const topPollen = pollen.filter(p => p.level !== "none").slice(0, 2);
-  if (topPollen.length > 0) {
-    const names = topPollen.map(p => p.plant_name).join(", ");
-    return `Pyłki w ${city.name} — ${names} | CoPyli.pl`;
-  }
-  return `Stężenie pyłków w ${city.name} dziś — aktualne dane | CoPyli.pl`;
+  return buildCityTitle(city.name, city.slug, pollen);
 }
 
 export function getCityPageDescription(city: City, pollen: PollenData[]): string {
-  const high = pollen.filter(p => p.level === "high" || p.level === "very_high");
-  if (high.length > 0) {
-    const names = high.map(p => `${p.plant_name} (${LEVEL_LABELS[p.level].toLowerCase()})`).join(", ");
-    return `Aktualne stężenie pyłków w ${city.name}. Dziś: ${names}. Prognoza 5-dniowa, Indeks Spacerowy i kalendarz pylenia dla alergików.`;
-  }
-  return `Aktualne stężenie pyłków w ${city.name} (${city.voivodeship_name}). Sprawdź co pyli, prognozę 5-dniową i Indeks Spacerowy. Dane dla alergików aktualizowane co 2 godziny.`;
+  return buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS);
 }
 
 export function getCityShareText(city: City, pollen: PollenData[]): string {

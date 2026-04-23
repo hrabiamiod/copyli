@@ -7,6 +7,7 @@
 
 import fs from "fs";
 import path from "path";
+import { buildCityTitle, buildCityDescription } from "../src/utils/cityTitle";
 
 const DIST = path.resolve("dist");
 const DATA = path.resolve("public/data");
@@ -171,13 +172,8 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
   const activePollen = pollen.filter(p => p.level !== "none");
   const highPollen = pollen.filter(p => p.level === "high" || p.level === "very_high");
 
-  const title = highPollen.length > 0
-    ? `Pyłki w ${city.name} — ${highPollen.map(p => p.plant_name).join(", ")} | CoPyli.pl`
-    : `Stężenie pyłków w ${city.name} dziś — aktualne dane | CoPyli.pl`;
-
-  const description = highPollen.length > 0
-    ? `Aktualne stężenie pyłków w ${city.name}. Dziś: ${highPollen.map(p => `${p.plant_name} (${LEVEL_LABELS[p.level]})`).join(", ")}. Prognoza 5-dniowa, Indeks Spacerowy i kalendarz pylenia.`
-    : `Aktualne stężenie pyłków w ${city.name} (${city.voivodeship_name}). Sprawdź co pyli, prognozę 5-dniową i Indeks Spacerowy. Dane dla alergików aktualizowane co 2 godziny.`;
+  const title = buildCityTitle(city.name, city.slug, pollen);
+  const description = buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS);
 
   const canonical = `https://copyli.pl/pylek/${city.slug}`;
   const ogImage = `https://copyli.pl/og/cities/${city.slug}.png`;

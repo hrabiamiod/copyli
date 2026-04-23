@@ -282,6 +282,31 @@ export default function CityPage() {
                 </Link>
               </div>
             )}
+          <div className="card anim-slide-r delay-3" style={{ padding:"16px 18px" }}>
+            <p className="label" style={{ marginBottom:12 }}>Porady dla alergików</p>
+            <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
+              {[
+                { to:"/porady/alergia-na-pylek", label:"Alergia na pyłki — poradnik" },
+                { to:"/porady/reaktywnosc-krzyzowa", label:"Reaktywność krzyżowa" },
+                { to:"/porady/sezon-pylkowy-2026", label:"Sezon pyłkowy 2026" },
+                { to:"/kalendarz-pylenia", label:"Kalendarz pylenia" },
+              ].map(({ to, label }) => (
+                <Link
+                  key={to} to={to}
+                  style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
+                    padding:"7px 10px", borderRadius:"var(--r-xs)",
+                    fontSize:13, color:"var(--ink-2)", textDecoration:"none",
+                    transition:"background 0.12s, color 0.12s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--forest-soft)"; (e.currentTarget as HTMLElement).style.color = "var(--forest)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = ""; (e.currentTarget as HTMLElement).style.color = "var(--ink-2)"; }}
+                >
+                  {label}
+                  <span style={{ fontSize:10, color:"var(--ink-3)" }}>›</span>
+                </Link>
+              ))}
+            </div>
+          </div>
           </div>
         </div>
       </div>
