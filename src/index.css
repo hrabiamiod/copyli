@@ -49,6 +49,13 @@
   /* Type */
   --font-display: 'Syne', Georgia, serif;
   --font-body:    'DM Sans', system-ui, -apple-system, sans-serif;
+
+  /* Hero height — 60svh on mobile, 75svh on md+ */
+  --hero-h: 60svh;
+}
+
+@media (min-width: 768px) {
+  :root { --hero-h: 75svh; }
 }
 
 /* ─── Base ────────────────────────────────────────────────────── */

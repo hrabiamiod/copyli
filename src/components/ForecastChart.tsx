@@ -33,21 +33,22 @@ export default function ForecastChart({ forecast }: { forecast: ForecastData[] }
   );
 
   return (
-    <div style={{ display: "flex", gap: 8 }}>
+    <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 4 }}>
       {days.map(({ date, maxLevel, dominant }, i) => {
         const d = new Date(date);
         return (
           <div
             key={date}
-            className="anim-fade-up"
+            className="anim-fade-up md:flex-1"
             style={{
-              flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+              flex: "0 0 auto", minWidth: 68,
+              display: "flex", flexDirection: "column", alignItems: "center",
               padding: "14px 6px 12px",
               background: "var(--surface)",
               border: "1px solid rgba(24,24,15,0.07)",
               borderRadius: "var(--r-sm)",
               boxShadow: "var(--s-card)",
-              minWidth: 0,
               animationDelay: `${i * 0.06}s`,
             }}
           >
@@ -79,6 +80,16 @@ export default function ForecastChart({ forecast }: { forecast: ForecastData[] }
           </div>
         );
       })}
+      </div>
+      <div
+        aria-hidden
+        className="md:hidden"
+        style={{
+          position: "absolute", right: 0, top: 0, bottom: 4,
+          width: 32, pointerEvents: "none",
+          background: "linear-gradient(to right, transparent, var(--surface, #fffcf5))",
+        }}
+      />
     </div>
   );
 }

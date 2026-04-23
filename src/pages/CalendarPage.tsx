@@ -4,6 +4,7 @@ import type { Plant } from "../types";
 import SEOHead from "../components/SEOHead";
 import { CATEGORY_LABELS } from "../utils/pollen";
 import { getStructuredDataCalendar } from "../utils/seo";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 
@@ -172,6 +173,7 @@ export default function CalendarPage() {
         </section>
 
       </div>
+      <StickyMobileCTA />
     </>
   );
 }

@@ -6,6 +6,7 @@ import PollenBadge from "../components/PollenBadge";
 import { CATEGORY_LABELS, LEVEL_COLORS, CATEGORY_ICONS } from "../utils/pollen";
 import { PLANT_INFO, CROSS } from "../utils/plant-info";
 import { getStructuredDataPlant } from "../utils/seo";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 const LEVEL_ORDER: PollenLevel[] = ["none", "low", "medium", "high", "very_high"];
@@ -339,6 +340,7 @@ export default function PlantPage() {
         </div>
 
       </div>
+      <StickyMobileCTA />
     </>
   );
 }

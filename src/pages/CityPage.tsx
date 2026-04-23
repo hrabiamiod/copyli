@@ -10,6 +10,7 @@ import WalkIndexCard from "../components/WalkIndexCard";
 import AirQualityCard from "../components/AirQualityCard";
 import HistoryChart from "../components/HistoryChart";
 import { getCityPageTitle, getCityPageDescription, getCityShareText, getStructuredDataCity } from "../utils/seo";
+import StickyMobileCTA from "../components/StickyMobileCTA";
 
 const PollenMap = lazy(() => import("../components/PollenMap"));
 
@@ -208,8 +209,8 @@ export default function CityPage() {
             </div>
           </div>
 
-          {/* Right sidebar */}
-          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          {/* Right sidebar — order-first na mobile: Walk/AQI pojawia sie przed Pollen */}
+          <div className="order-first md:order-none" style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
             {wx?.score != null && (
               <div className="anim-slide-r delay-1">
@@ -310,6 +311,7 @@ export default function CityPage() {
           </div>
         </div>
       </div>
+      <StickyMobileCTA />
     </>
   );
 }

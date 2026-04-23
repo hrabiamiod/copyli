@@ -132,7 +132,7 @@ export default function HomePage() {
       <section
         style={{
           position: "relative",
-          height: "75svh",
+          height: "var(--hero-h)",
           minHeight: 420,
           overflow: "hidden",
         }}

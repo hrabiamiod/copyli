@@ -2,7 +2,15 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import CitySearch from "./CitySearch";
 import UserMenu from "./UserMenu";
+import MobileDrawer from "./MobileDrawer";
 import { useAuth } from "../context/AuthContext";
+
+const NAV_LINKS = [
+  { to: "/", label: "Mapa" },
+  { to: "/pylek/rosliny", label: "Rośliny" },
+  { to: "/kalendarz-pylenia", label: "Kalendarz" },
+  { to: "/porady/alergia-na-pylek", label: "Porady" },
+] as const;
 
 const LogoIcon = () => (
   <svg width="15" height="14" viewBox="0 0 48 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -12,6 +20,7 @@ const LogoIcon = () => (
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
   const isHome = location.pathname === "/";
@@ -67,7 +76,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Nav */}
           <nav className="hidden md:flex items-center" style={{ gap: 2 }}>
-            {[{ to: "/", label: "Mapa" }, { to: "/pylek/rosliny", label: "Rośliny" }, { to: "/kalendarz-pylenia", label: "Kalendarz" }, { to: "/porady/alergia-na-pylek", label: "Porady" }].map(({ to, label }) => (
+            {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
@@ -96,8 +105,29 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* User menu / login button */}
           <UserMenu />
+
+          {/* Hamburger — mobile only */}
+          <button
+            className="md:hidden"
+            aria-label="Otwórz menu"
+            aria-expanded={drawerOpen}
+            aria-controls="mobile-drawer"
+            onClick={() => setDrawerOpen(v => !v)}
+            style={{
+              background: "transparent", border: "none", padding: 8,
+              cursor: "pointer", borderRadius: 10,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--ink-2)", flexShrink: 0,
+            }}
+          >
+            <svg width="20" height="14" viewBox="0 0 20 14" fill="none" aria-hidden="true">
+              <path d="M0 1H20M0 7H20M0 13H20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
       </header>
+
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       {user?.badges.some(b => b.id === 'pioneer') && (
         <div style={{
