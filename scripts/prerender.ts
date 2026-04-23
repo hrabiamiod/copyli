@@ -60,6 +60,7 @@ interface Voivodeship {
 }
 
 interface PollenEntry {
+  plant_slug?: string;
   plant_name: string;
   name_latin: string;
   icon: string;
@@ -517,6 +518,210 @@ function generatePlantsIndexPage(plants: PlantRecord[]): void {
   fs.writeFileSync(path.join(outDir, "rosliny.html"), html);
 }
 
+// ─── Generowanie stron poradnikowych ──────────────────────────────────────
+
+const ADVICE_PAGES = [
+  {
+    slug: "alergia-na-pylek",
+    title: "Alergia na pyłki — objawy, leczenie i jak się chronić | CoPyli.pl",
+    description: "Kompleksowy przewodnik po alergii pyłkowej: objawy, diagnostyka, leczenie i codzienne sposoby na przeżycie sezonu pyłkowego bez cierpienia.",
+    h1: "Alergia na pyłki — objawy, leczenie i jak się chronić",
+    intro: "W Polsce na alergię pyłkową cierpi szacunkowo 10–20% populacji. Sezon pyłkowy trwa od lutego do października. Dowiedz się jak rozpoznać objawy, jakie leki stosować i jak ograniczyć ekspozycję na pyłki.",
+    datePublished: "2026-04-01",
+  },
+  {
+    slug: "sezon-pylkowy-2026",
+    title: "Sezon pyłkowy 2026 w Polsce — kiedy zaczyna się i ile trwa | CoPyli.pl",
+    description: "Kiedy zaczyna się sezon pyłkowy 2026? Harmonogram pylenia drzew, traw i chwastów w Polsce. Prognoza sezonu dla alergików — miesiąc po miesiącu.",
+    h1: "Sezon pyłkowy 2026 w Polsce — kiedy zaczyna się i ile trwa",
+    intro: "Sezon pyłkowy 2026 w Polsce trwa od lutego do października — łącznie około 9 miesięcy. Sprawdź harmonogram pylenia drzew (brzoza, olcha), traw i chwastów (ambrozja, bylica).",
+    datePublished: "2026-01-15",
+  },
+  {
+    slug: "reaktywnosc-krzyzowa",
+    title: "Reaktywność krzyżowa pyłków — pełna lista alergenów i pokarmów | CoPyli.pl",
+    description: "Reaktywność krzyżowa pyłków i pokarmów — kiedy alergia na brzozę powoduje reakcję na jabłka? Pełna lista: drzewa, trawy, chwasty i powiązane pokarmy.",
+    h1: "Reaktywność krzyżowa pyłków — pełna lista",
+    intro: "Reaktywność krzyżowa to zjawisko, w którym układ odpornościowy uczulony na pyłki reaguje też na podobne białka obecne w pokarmach. Dotyczy szacunkowo 50–75% osób uczulonych na pyłki drzew.",
+    datePublished: "2026-04-01",
+  },
+];
+
+function generateAdvicePages(): void {
+  const outDir = path.join(DIST, "porady");
+  ensureDir(outDir);
+
+  for (const page of ADVICE_PAGES) {
+    const canonical = `https://copyli.pl/porady/${page.slug}`;
+
+    const bodyHtml = `
+<main style="font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:24px 16px">
+  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
+    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo; ${esc(page.h1.split(" —")[0])}
+  </nav>
+  <h1 style="font-size:1.875rem;font-weight:700;color:#111827;margin-bottom:8px">
+    ${esc(page.h1)}
+  </h1>
+  <p style="color:#4b5563;margin-bottom:24px;line-height:1.7">${esc(page.intro)}</p>
+  <p style="color:#6b7280;font-size:0.875rem">
+    <a href="/kalendarz-pylenia" style="color:#15803d">Kalendarz pylenia roślin</a> ·
+    <a href="/pylek/rosliny" style="color:#15803d">Rośliny pylące w Polsce</a>
+  </p>
+</main>`;
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: page.h1,
+      description: page.description,
+      url: canonical,
+      datePublished: page.datePublished,
+      dateModified: "2026-04-22",
+      author: { "@type": "Organization", name: "Zespół CoPyli.pl" },
+      publisher: { "@type": "Organization", name: "CoPyli.pl", url: "https://copyli.pl" },
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
+          { "@type": "ListItem", position: 2, name: page.h1, item: canonical },
+        ],
+      },
+    };
+
+    const html = injectMeta(template, { title: page.title, description: page.description, canonical, structuredData, bodyHtml });
+    fs.writeFileSync(path.join(outDir, `${page.slug}.html`), html);
+  }
+}
+
+// ─── Generowanie stron porównania miast ───────────────────────────────────
+
+const TOP_COMPARE_CITIES = 7; // 7 miast = 21 par
+
+async function generateComparePages(allCities: City[]): Promise<number> {
+  const topCities = allCities
+    .slice()
+    .sort((a, b) => b.population - a.population)
+    .slice(0, TOP_COMPARE_CITIES);
+
+  const pairs: [City, City][] = [];
+  for (let i = 0; i < topCities.length; i++) {
+    for (let j = i + 1; j < topCities.length; j++) {
+      pairs.push([topCities[i], topCities[j]]);
+    }
+  }
+
+  let generated = 0;
+  await Promise.all(pairs.map(async ([city1, city2]) => {
+    let data1: CityData | null = null;
+    let data2: CityData | null = null;
+    try {
+      const [raw1, raw2] = await Promise.all([
+        fs.promises.readFile(path.join(DATA, "cities", `${city1.slug}.json`), "utf-8"),
+        fs.promises.readFile(path.join(DATA, "cities", `${city2.slug}.json`), "utf-8"),
+      ]);
+      data1 = JSON.parse(raw1) as CityData;
+      data2 = JSON.parse(raw2) as CityData;
+    } catch { return; }
+
+    const pollen1 = data1?.pollen ?? [];
+    const pollen2 = data2?.pollen ?? [];
+
+    const LEVEL_ORDER_LOCAL = ["none", "low", "medium", "high", "very_high"];
+    const levelScore = (lvl: string) => LEVEL_ORDER_LOCAL.indexOf(lvl);
+
+    const score1 = pollen1.reduce((s, p) => s + levelScore(p.level), 0);
+    const score2 = pollen2.reduce((s, p) => s + levelScore(p.level), 0);
+    const winner = score1 < score2 ? city1 : score2 < score1 ? city2 : null;
+    const winnerText = winner
+      ? `Ogólnie niższe stężenia pyłków ma dziś <strong>${winner.name}</strong>.`
+      : "Stężenia pyłków w obu miastach są porównywalne.";
+
+    const title = `Pyłki: ${city1.name} vs ${city2.name} — porównanie stężeń | CoPyli.pl`;
+    const description = `Porównanie stężeń pyłków w ${city1.name} i ${city2.name}. Sprawdź gdzie jest lepiej dla alergika — prognoza 5-dniowa i aktualne dane.`;
+    const canonical = `https://copyli.pl/porownaj/${city1.slug}/${city2.slug}`;
+
+    // Tabela porównawcza — unikalne rośliny z obu miast
+    const allSlugs = Array.from(new Set([
+      ...pollen1.map(p => p.plant_slug ?? ""),
+      ...pollen2.map(p => p.plant_slug ?? ""),
+    ])).filter(Boolean);
+
+    const rows = allSlugs
+      .map(slug => {
+        const p1 = pollen1.find(p => p.plant_slug === slug);
+        const p2 = pollen2.find(p => p.plant_slug === slug);
+        const lvl1 = p1?.level ?? "none";
+        const lvl2 = p2?.level ?? "none";
+        const name = p1?.plant_name ?? p2?.plant_name ?? slug;
+        const icon = p1?.icon ?? p2?.icon ?? "🌿";
+        const max = Math.max(levelScore(lvl1), levelScore(lvl2));
+        return { name, icon, lvl1, lvl2, max };
+      })
+      .sort((a, b) => b.max - a.max);
+
+    const tableRows = rows.map(r =>
+      `<tr>
+        <td style="padding:8px 12px">${r.icon} ${esc(r.name)}</td>
+        <td style="padding:8px 12px">${levelBadge(r.lvl1)}</td>
+        <td style="padding:8px 12px">${levelBadge(r.lvl2)}</td>
+      </tr>`
+    ).join("");
+
+    const bodyHtml = `
+<main style="font-family:system-ui,sans-serif;max-width:800px;margin:0 auto;padding:24px 16px">
+  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
+    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo;
+    <a href="/pylek/${city1.slug}" style="color:#15803d">${esc(city1.name)}</a> vs
+    <a href="/pylek/${city2.slug}" style="color:#15803d">${esc(city2.name)}</a>
+  </nav>
+  <h1 style="font-size:1.875rem;font-weight:700;color:#111827;margin-bottom:8px">
+    Pyłki: ${esc(city1.name)} vs ${esc(city2.name)}
+  </h1>
+  <p style="color:#4b5563;margin-bottom:16px">${description}</p>
+  <p style="background:rgba(27,67,50,0.07);border:1px solid rgba(27,67,50,0.15);border-radius:8px;padding:12px 16px;color:#111827;margin-bottom:24px">
+    ${winnerText}
+  </p>
+  <h2 style="font-size:1.125rem;font-weight:600;margin-bottom:12px">Porównanie stężeń pyłków</h2>
+  <table style="border-collapse:collapse;width:100%;background:#f9fafb;border-radius:8px;overflow:hidden;margin-bottom:24px">
+    <thead><tr style="background:#f3f4f6">
+      <th style="padding:8px 12px;text-align:left">Roślina</th>
+      <th style="padding:8px 12px;text-align:left">${esc(city1.name)}</th>
+      <th style="padding:8px 12px;text-align:left">${esc(city2.name)}</th>
+    </tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table>
+  <p style="color:#6b7280;font-size:0.875rem">
+    Dane pyłkowe aktualizowane co 2 godziny.
+    <a href="/pylek/${city1.slug}" style="color:#15803d">Szczegóły dla ${esc(city1.name)}</a> ·
+    <a href="/pylek/${city2.slug}" style="color:#15803d">Szczegóły dla ${esc(city2.name)}</a>
+  </p>
+</main>`;
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: title,
+      description,
+      url: canonical,
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
+          { "@type": "ListItem", position: 2, name: `${city1.name} vs ${city2.name}`, item: canonical },
+        ],
+      },
+    };
+
+    const html = injectMeta(template, { title, description, canonical, structuredData, bodyHtml });
+    const outDir = path.join(DIST, "porownaj", city1.slug);
+    await fs.promises.mkdir(outDir, { recursive: true });
+    await fs.promises.writeFile(path.join(outDir, `${city2.slug}.html`), html);
+    generated++;
+  }));
+
+  return generated;
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -558,8 +763,17 @@ async function main() {
     console.log(`  ✅ Wygenerowano ${plants.length} stron roślin + indeks`);
   }
 
+  console.log(`📝 Pre-renderowanie stron poradnikowych...`);
+  generateAdvicePages();
+  console.log(`  ✅ Wygenerowano ${ADVICE_PAGES.length} stron poradnikowych`);
+
+  console.log(`🏙️  Pre-renderowanie stron porównania miast...`);
+  const compareCount = await generateComparePages(cities);
+  console.log(`  ✅ Wygenerowano ${compareCount} stron porównania miast`);
+
   const plantCount = plants?.length ?? 0;
-  console.log(`\n✅ Pre-renderowanie zakończone. ${cities.length + voivodeships.length + 1 + plantCount} plików HTML gotowych.`);
+  const total = cities.length + voivodeships.length + 1 + plantCount + ADVICE_PAGES.length + compareCount;
+  console.log(`\n✅ Pre-renderowanie zakończone. ${total} plików HTML gotowych.`);
 }
 
 main().catch(console.error);

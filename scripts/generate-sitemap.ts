@@ -28,11 +28,18 @@ async function main() {
   const voivUrls = voivodeships.map(v => url(`/pylek/woj/${v.slug}`, "0.7", "hourly")).join("\n");
   const plantUrls = plants.map(p => url(`/pylek/roslina/${p.slug}`, "0.6", "monthly")).join("\n");
 
+  const adviceUrls = [
+    url("/porady/alergia-na-pylek", "0.7", "yearly"),
+    url("/porady/sezon-pylkowy-2026", "0.7", "yearly"),
+    url("/porady/reaktywnosc-krzyzowa", "0.7", "yearly"),
+  ].join("\n");
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${url("/", "1.0", "hourly")}
 ${url("/kalendarz-pylenia", "0.6", "monthly")}
 ${url("/pylek/rosliny", "0.7", "monthly")}
+${adviceUrls}
 ${voivUrls}
 ${plantUrls}
 ${cityUrls}

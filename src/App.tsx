@@ -24,6 +24,9 @@ import AdminGuard from "./components/AdminGuard";
 import GAPageTracker from "./components/GAPageTracker";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
+import AllergyGuidePage from "./pages/advice/AllergyGuidePage";
+import Season2026Page from "./pages/advice/Season2026Page";
+import CrossReactivityPage from "./pages/advice/CrossReactivityPage";
 
 export default function App() {
   return (
@@ -56,6 +59,9 @@ export default function App() {
             <Route path="/pylek/:miasto" element={<CityPage />} />
             <Route path="/porownaj/:miasto1/:miasto2" element={<ComparePage />} />
             <Route path="/kalendarz-pylenia" element={<CalendarPage />} />
+            <Route path="/porady/alergia-na-pylek" element={<AllergyGuidePage />} />
+            <Route path="/porady/sezon-pylkowy-2026" element={<Season2026Page />} />
+            <Route path="/porady/reaktywnosc-krzyzowa" element={<CrossReactivityPage />} />
             <Route path="/regulamin" element={<TermsPage />} />
             <Route path="/polityka-prywatnosci" element={<PrivacyPage />} />
 
