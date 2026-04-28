@@ -73,7 +73,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
       // Na mini-mapie (CityPage) zoom w prawym dolnym rogu — nie zasłania legendy
       L.control.zoom({ position: compact ? "bottomright" : "topleft" }).addTo(map);
 
-      tileLayerRef.current = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png", {
+      tileLayerRef.current = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png", {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
         maxZoom: 19,
@@ -90,10 +90,10 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
               const level = getVoivodeshipLevel(mapData, slug);
               return {
                 fillColor: getVoivodeshipFillColor(level),
-                weight: 2,
+                weight: 2.5,
                 opacity: 1,
-                color: "#fff",
-                fillOpacity: 0.65,
+                color: "rgba(255,255,255,0.9)",
+                fillOpacity: 0.82,
               };
             },
             onEachFeature: (feature, layer) => {
@@ -121,7 +121,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
 
       const getSize = (city: City) => {
         const isHighlighted = city.slug === highlightCitySlug;
-        return isHighlighted ? 16 : city.population > 200000 ? 13 : city.population > 50000 ? 10 : 7;
+        return isHighlighted ? 22 : city.population > 500000 ? 19 : city.population > 200000 ? 16 : city.population > 50000 ? 13 : 10;
       };
 
       const createMarker = (city: City) => {
@@ -133,11 +133,11 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         const icon = L.divIcon({
           html: `<div style="
             background:${color};
-            border: 2px solid ${isHighlighted ? "#1B5E20" : "rgba(0,0,0,0.3)"};
+            border: 2.5px solid ${isHighlighted ? "#1B5E20" : "rgba(255,255,255,0.95)"};
             border-radius: 50%;
             width: ${size}px;
             height: ${size}px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.12);
           "></div>`,
           className: "",
           iconSize: [size, size],
@@ -147,15 +147,16 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
         const marker = L.marker([city.lat, city.lon], { icon });
 
         marker.bindPopup(`
-          <div style="min-width:150px;font-family:sans-serif">
-            <strong style="font-size:14px">${city.name}</strong><br>
-            <small style="color:#666">${city.voivodeship_name}</small><br>
-            <span style="display:inline-block;margin:4px 0;padding:2px 8px;border-radius:10px;background:${color};font-size:12px;font-weight:600;color:${level === 'none' || level === 'low' ? '#1B5E20' : '#fff'}">${LEVEL_LABELS[level]}</span><br>
-            <a href="/pylek/${city.slug}" style="color:#2e7d32;font-size:13px;font-weight:600;text-decoration:none">
+          <div style="min-width:160px;font-family:'Outfit',system-ui,sans-serif;padding:2px 0">
+            <p style="margin:0 0 1px;font-size:15px;font-weight:700;color:#18180f;letter-spacing:-0.01em">${city.name}</p>
+            <p style="margin:0 0 8px;font-size:11px;color:#888;font-weight:400">${city.voivodeship_name}</p>
+            <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;background:${color};font-size:12px;font-weight:600;color:${level === 'none' || level === 'low' ? '#14532d' : '#fff'};margin-bottom:10px">${LEVEL_LABELS[level]}</span>
+            <br>
+            <a href="/pylek/${city.slug}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:999px;background:#1B5E3B;color:#fff;font-size:12px;font-weight:600;text-decoration:none;letter-spacing:0.01em">
               Zobacz szczegóły →
             </a>
           </div>
-        `, { maxWidth: 220 });
+        `, { maxWidth: 230 });
 
         marker.on("click", () => {
           if (onCityClick) onCityClick(city);
@@ -270,7 +271,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
     }
     const tileUrl = next
       ? "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png"
-      : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+      : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png";
     tileLayerRef.current = L.tileLayer(tileUrl, {
       attribution: '© OpenStreetMap © CARTO',
       subdomains: "abcd",
@@ -440,12 +441,24 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
 
       {/* Legenda — tylko na pełnej mapie */}
       {!compact && (
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 text-xs">
-          <p className="font-semibold text-gray-700 mb-2 text-[11px] uppercase tracking-wide">Stężenie pyłków</p>
+        <div style={{
+          position: "absolute", bottom: 16, left: 16, zIndex: 1000,
+          background: "rgba(247,242,235,0.96)", backdropFilter: "blur(16px)",
+          borderRadius: 14, padding: "10px 14px",
+          boxShadow: "0 4px 20px rgba(24,24,15,0.12), 0 0 0 1px rgba(24,24,15,0.06)",
+        }}>
+          <p style={{ margin: "0 0 7px", fontSize: 10, fontWeight: 700, color: "rgba(24,24,15,0.45)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Stężenie pyłków
+          </p>
           {(["none", "low", "medium", "high", "very_high"] as const).map(level => (
-            <div key={level} className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full border border-black/10" style={{ background: LEVEL_COLORS[level] }} />
-              <span className="text-gray-600">{LEVEL_LABELS[level]}</span>
+            <div key={level} style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+              <div style={{
+                width: 11, height: 11, borderRadius: "50%",
+                background: LEVEL_COLORS[level],
+                border: "1.5px solid rgba(24,24,15,0.15)",
+                flexShrink: 0,
+              }} />
+              <span style={{ fontSize: 12, color: "rgba(24,24,15,0.75)", fontWeight: 500 }}>{LEVEL_LABELS[level]}</span>
             </div>
           ))}
         </div>

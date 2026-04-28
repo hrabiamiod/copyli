@@ -51,9 +51,18 @@ export function getVoivodeshipLevel(mapData: MapData[], voivSlug: string): Polle
   return max;
 }
 
+// Osobna paleta dla nakładek mapy — mocniej nasycona niż LEVEL_COLORS używana w UI
+export const LEVEL_MAP_COLORS: Record<PollenLevel, string> = {
+  none:      "rgba(180,210,180,0.22)",
+  low:       "rgba(34,197,94,0.42)",
+  medium:    "rgba(234,179,8,0.52)",
+  high:      "rgba(234,88,12,0.60)",
+  very_high: "rgba(185,28,28,0.66)",
+};
+
 // Zwraca kolor wypełnienia województwa dla mapy
 export function getVoivodeshipFillColor(level: PollenLevel): string {
-  return LEVEL_COLORS[level];
+  return LEVEL_MAP_COLORS[level];
 }
 
 // Formatuje datę po polsku
