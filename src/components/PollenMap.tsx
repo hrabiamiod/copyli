@@ -90,17 +90,17 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
               const level = getVoivodeshipLevel(mapData, slug);
               return {
                 fillColor: getVoivodeshipFillColor(level),
-                weight: 2.5,
+                weight: 1.5,
                 opacity: 1,
-                color: "rgba(255,255,255,0.9)",
-                fillOpacity: 0.82,
+                color: "rgba(255,255,255,0.75)",
+                fillOpacity: 0.62,
               };
             },
             onEachFeature: (feature, layer) => {
               const slug = feature?.properties?.slug as string;
               const name = feature?.properties?.name as string;
               const level = getVoivodeshipLevel(mapData, slug);
-              layer.bindTooltip(`<span>${name}</span><br><small>${LEVEL_LABELS[level]}</small>`, {
+              layer.bindTooltip(`<span>${name}</span>`, {
                 permanent: true,
                 direction: "center",
                 className: "voiv-label",
@@ -187,7 +187,7 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
               permanent: true,
               direction: "right",
               className: "city-name-label",
-              offset: [sz / 2 + 4, 0] as [number, number],
+              offset: [sz / 2 + 3, 0] as [number, number],
             });
           }
           marker.addTo(layerGroup);
