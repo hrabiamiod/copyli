@@ -99,7 +99,6 @@ export default function PollenMap({ cities, mapData, cityLevels = {}, onCityClic
             onEachFeature: (feature, layer) => {
               const slug = feature?.properties?.slug as string;
               const name = feature?.properties?.name as string;
-              const level = getVoivodeshipLevel(mapData, slug);
               layer.bindTooltip(`<span>${name}</span>`, {
                 permanent: true,
                 direction: "center",
