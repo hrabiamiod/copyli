@@ -81,7 +81,7 @@ export default function CityPage() {
         ogImage={`https://copyli.pl/og/cities/${city.slug}.png`}
       />
 
-      <div style={{ maxWidth:1080, margin:"0 auto", padding:"24px 16px 56px" }}>
+      <div className="pb-28 md:pb-14" style={{ maxWidth:1080, margin:"0 auto", padding:"24px 16px 0" }}>
 
         {/* Breadcrumb */}
         <nav className="breadcrumb anim-fade-in" style={{ marginBottom:20 }}>

@@ -40,9 +40,9 @@ export default function ForecastChart({ forecast }: { forecast: ForecastData[] }
         return (
           <div
             key={date}
-            className="anim-fade-up md:flex-1"
+            className="anim-fade-up flex-none md:flex-1"
             style={{
-              flex: "0 0 auto", minWidth: 68,
+              minWidth: 68,
               display: "flex", flexDirection: "column", alignItems: "center",
               padding: "14px 6px 12px",
               background: "var(--surface)",

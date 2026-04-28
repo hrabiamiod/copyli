@@ -33,7 +33,7 @@ export default function CalendarPage() {
         structuredData={getStructuredDataCalendar(new Date().getFullYear())}
       />
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px 48px" }}>
+      <div className="pb-28 md:pb-12" style={{ maxWidth: 900, margin: "0 auto", padding: "24px 16px 0" }}>
 
         <nav style={{ fontSize: 12, color: "var(--ink-3)", display: "flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
           <Link to="/" style={{ color: "var(--ink-3)", textDecoration: "none" }}

@@ -80,7 +80,7 @@ export default function PlantPage() {
         structuredData={getStructuredDataPlant(plant)}
       />
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 56px", display: "flex", flexDirection: "column", gap: 24 }}>
+      <div className="pb-28 md:pb-14" style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px 0", display: "flex", flexDirection: "column", gap: 24 }}>
 
         {/* Breadcrumb */}
         <nav className="breadcrumb anim-fade-in">

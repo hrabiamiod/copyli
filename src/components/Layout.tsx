@@ -108,7 +108,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Hamburger — mobile only */}
           <button
-            className="md:hidden"
+            className="md:hidden flex items-center justify-center"
             aria-label="Otwórz menu"
             aria-expanded={drawerOpen}
             aria-controls="mobile-drawer"
@@ -116,7 +116,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             style={{
               background: "transparent", border: "none", padding: 8,
               cursor: "pointer", borderRadius: 10,
-              display: "flex", alignItems: "center", justifyContent: "center",
               color: "var(--ink-2)", flexShrink: 0,
             }}
           >
