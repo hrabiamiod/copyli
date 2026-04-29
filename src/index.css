@@ -362,6 +362,21 @@ body::before {
   }
   .breadcrumb a:hover { color: var(--forest-mid); }
 
+  /* Blog article row */
+  .article-row {
+    transition: background 0.15s;
+    border-radius: 8px;
+    margin: 0 -12px;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .article-row:hover {
+    background: var(--forest-soft);
+  }
+  .article-row:hover h3 {
+    color: var(--forest) !important;
+  }
+
   /* Section label */
   .label {
     font-size: 0.6875rem;

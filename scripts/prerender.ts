@@ -541,6 +541,46 @@ const ADVICE_PAGES = [
     intro: "Reaktywność krzyżowa to zjawisko, w którym układ odpornościowy uczulony na pyłki reaguje też na podobne białka obecne w pokarmach. Dotyczy szacunkowo 50–75% osób uczulonych na pyłki drzew.",
     datePublished: "2026-04-01",
   },
+  {
+    slug: "alergia-na-trawy",
+    title: "Alergia na trawy — objawy, sezon pylenia i leczenie | CoPyli.pl",
+    description: "Alergia na trawy dotyka 8% Polaków. Kiedy trawa pyli, jakie objawy daje i jak się leczyć? Sprawdź sezon pylenia traw w Polsce i aktualne stężenia.",
+    h1: "Alergia na trawy — objawy, sezon i leczenie",
+    intro: "Trawy (Poaceae) pylą w Polsce od maja do początku września — to jeden z najdłuższych sezonów pylenia. Graminozy (alergeny traw) uczulają szacunkowo 8% Polaków i są główną przyczyną alergii letnich.",
+    datePublished: "2026-04-29",
+  },
+  {
+    slug: "pylenie-brzozy",
+    title: "Pylenie brzozy — kiedy sezon, objawy alergii i co robić | CoPyli.pl",
+    description: "Brzoza pyli w Polsce głównie w marcu–maju i uczula ok. 20% alergików. Sprawdź aktualny sezon, objawy alergii na brzozę i metody ochrony.",
+    h1: "Pylenie brzozy — sezon, objawy alergii i ochrona",
+    intro: "Brzoza (Betula pendula) to jeden z najsilniejszych alergenów wiosennych w Polsce. Sezon pylenia trwa zwykle od marca do maja — w szczytowych dniach stężenia mogą przekraczać 1500 ziaren/m³.",
+    datePublished: "2026-04-29",
+  },
+  {
+    slug: "jak-chronic-sie-przed-pylkami",
+    title: "Jak chronić się przed pyłkami — 10 sprawdzonych metod | CoPyli.pl",
+    description: "Skuteczna ochrona przed pyłkami: sprawdź stężenia, dobierz leki, zadbaj o dom. 10 praktycznych wskazówek dla alergika podczas sezonu pyłkowego.",
+    h1: "Jak chronić się przed pyłkami — 10 sprawdzonych metod",
+    intro: "Całkowita eliminacja ekspozycji na pyłki jest niemożliwa, ale świadome zarządzanie ryzykiem znacząco ogranicza objawy. Poniższe metody pomogą Ci przeżyć sezon z mniejszym dyskomfortem.",
+    datePublished: "2026-04-29",
+  },
+  {
+    slug: "leki-na-alergie-pylkowa",
+    title: "Leki na alergię pyłkową — antyhistaminowe, steroidy, odczulanie | CoPyli.pl",
+    description: "Jakie leki na alergię pyłkową wybrać? Antyhistaminowe II generacji, kortykosteroidy donosowe i immunoterapia — jak działają i kiedy je stosować.",
+    h1: "Leki na alergię pyłkową — rodzaje, działanie i skuteczność",
+    intro: "Leczenie alergii pyłkowej opiera się na trzech filarach: leki antyhistaminowe (objawy doraźne), kortykosteroidy donosowe (codzienna kontrola) i immunoterapia alergenowa (jedyna metoda przyczynowa).",
+    datePublished: "2026-04-29",
+  },
+  {
+    slug: "alergia-na-ambrozje",
+    title: "Ambrozja — alergia, sezon pylenia (sierpień–październik) | CoPyli.pl",
+    description: "Ambrozja to jeden z najgroźniejszych alergenów sierpień–październik. Sprawdź sezon pylenia ambrozji w Polsce, objawy alergii i jak się chronić.",
+    h1: "Ambrozja — alergia, sezon i ochrona",
+    intro: "Ambrozja bylicolistna (Ambrosia artemisiifolia) to inwazyjny chwast z Ameryki Północnej, który stał się jednym z najgroźniejszych alergenów w Polsce. Pyli od sierpnia do października — kiedy większość innych roślin już zakończyła sezon.",
+    datePublished: "2026-04-29",
+  },
 ];
 
 function generateAdvicePages(): void {
@@ -587,6 +627,60 @@ function generateAdvicePages(): void {
     const html = injectMeta(template, { title: page.title, description: page.description, canonical, structuredData, bodyHtml });
     fs.writeFileSync(path.join(outDir, `${page.slug}.html`), html);
   }
+}
+
+function generateAdviceHubPage(pages: { slug: string; h1: string; intro: string }[]): void {
+  const outDir = path.join(DIST, "porady");
+  ensureDir(outDir);
+
+  const ICONS: Record<string, string> = {
+    "alergia-na-pylek":              "🌸",
+    "sezon-pylkowy-2026":            "📅",
+    "reaktywnosc-krzyzowa":          "🔗",
+    "alergia-na-trawy":              "🌾",
+    "pylenie-brzozy":                "🌳",
+    "jak-chronic-sie-przed-pylkami": "🛡️",
+    "leki-na-alergie-pylkowa":       "💊",
+    "alergia-na-ambrozje":           "🌿",
+  };
+
+  const cards = pages.map(p =>
+    `<a href="/porady/${p.slug}" style="display:block;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;text-decoration:none;">
+      <div style="font-size:28px;margin-bottom:10px">${ICONS[p.slug] ?? "📄"}</div>
+      <p style="font-weight:700;font-size:15px;color:#111827;margin:0 0 6px">${esc(p.h1.split(" —")[0])}</p>
+      <p style="font-size:13px;color:#4b5563;line-height:1.6;margin:0 0 12px">${esc(p.intro.substring(0, 120))}...</p>
+      <span style="font-size:13px;color:#15803d;font-weight:600">Czytaj dalej →</span>
+    </a>`
+  ).join("\n");
+
+  const bodyHtml = `
+<main style="font-family:system-ui,sans-serif;max-width:860px;margin:0 auto;padding:24px 16px">
+  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
+    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo; Porady dla alergików
+  </nav>
+  <h1 style="font-size:1.875rem;font-weight:800;color:#111827;margin-bottom:8px">Porady dla alergików</h1>
+  <p style="color:#4b5563;margin-bottom:32px;line-height:1.7">
+    Praktyczne przewodniki opracowane przez zespół CoPyli.pl — kiedy pylą rośliny,
+    jak się chronić i co stosować podczas sezonu pyłkowego.
+  </p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+    ${cards}
+  </div>
+</main>`;
+
+  const canonical = "https://copyli.pl/porady/";
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Porady dla alergików — CoPyli.pl",
+    description: "Poradniki o alergii pyłkowej: objawy, leczenie, ochrona i aktualny sezon pyłkowy.",
+    url: canonical,
+  };
+
+  const title = "Porady dla alergików — poradniki o alergii pyłkowej | CoPyli.pl";
+  const description = "Poradniki dla alergików: alergia na pyłki, trawy, brzozę, ambrozję. Leki, ochrona i aktualny sezon pyłkowy 2026.";
+  const html = injectMeta(template, { title, description, canonical, structuredData, bodyHtml });
+  fs.writeFileSync(path.join(outDir, "index.html"), html);
 }
 
 // ─── Generowanie stron porównania miast ───────────────────────────────────
@@ -761,7 +855,8 @@ async function main() {
 
   console.log(`📝 Pre-renderowanie stron poradnikowych...`);
   generateAdvicePages();
-  console.log(`  ✅ Wygenerowano ${ADVICE_PAGES.length} stron poradnikowych`);
+  generateAdviceHubPage(ADVICE_PAGES);
+  console.log(`  ✅ Wygenerowano ${ADVICE_PAGES.length} stron poradnikowych + hub /porady/`);
 
   console.log(`🏙️  Pre-renderowanie stron porównania miast...`);
   const compareCount = await generateComparePages(cities);

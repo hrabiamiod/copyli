@@ -11,6 +11,12 @@ import StickyMobileCTA from "../components/StickyMobileCTA";
 const MONTHS = ["Sty", "Lut", "Mar", "Kwi", "Maj", "Cze", "Lip", "Sie", "Wrz", "Paź", "Lis", "Gru"];
 const LEVEL_ORDER: PollenLevel[] = ["none", "low", "medium", "high", "very_high"];
 
+const PLANT_ARTICLE: Record<string, { href: string; label: string }> = {
+  grass:   { href: "/porady/alergia-na-trawy",    label: "Alergia na trawy — objawy i leczenie" },
+  birch:   { href: "/porady/pylenie-brzozy",      label: "Pylenie brzozy — sezon i ochrona" },
+  ragweed: { href: "/porady/alergia-na-ambrozje", label: "Ambrozja — alergia i sezon pylenia" },
+};
+
 export default function PlantPage() {
   const { roslina } = useParams<{ roslina: string }>();
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -318,6 +324,21 @@ export default function PlantPage() {
                 </Link>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Link do powiązanego artykułu poradnikowego */}
+        {PLANT_ARTICLE[plant.slug] && (
+          <div style={{
+            background: "rgba(27,67,50,0.05)", border: "1px solid rgba(27,67,50,0.12)",
+            borderRadius: "var(--r-md)", padding: "16px 20px", marginTop: 24,
+          }}>
+            <p style={{ fontSize: 13, color: "var(--ink-2)", margin: "0 0 8px" }}>
+              Dowiedz się więcej:
+            </p>
+            <Link to={PLANT_ARTICLE[plant.slug].href} style={{ fontSize: 14, fontWeight: 600, color: "var(--forest)" }}>
+              {PLANT_ARTICLE[plant.slug].label} →
+            </Link>
           </div>
         )}
 
