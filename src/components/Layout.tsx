@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { to: "/", label: "Mapa" },
   { to: "/pylek/rosliny", label: "Rośliny" },
   { to: "/kalendarz-pylenia", label: "Kalendarz" },
-  { to: "/porady/alergia-na-pylek", label: "Porady" },
+  { to: "/porady", label: "Porady" },
 ] as const;
 
 const LogoIcon = () => (
@@ -177,7 +177,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               },
               {
                 title: "Porady",
-                links: [["Alergia na pyłki","porady/alergia-na-pylek"],["Sezon pyłkowy 2026","porady/sezon-pylkowy-2026"],["Reaktywność krzyżowa","porady/reaktywnosc-krzyzowa"],["Kalendarz pylenia","kalendarz-pylenia"],["Rośliny pylące","pylek/rosliny"]] as [string,string][],
+                links: [["Wszystkie porady","porady"],["Alergia na pyłki","porady/alergia-na-pylek"],["Sezon pyłkowy 2026","porady/sezon-pylkowy-2026"],["Reaktywność krzyżowa","porady/reaktywnosc-krzyzowa"],["Kalendarz pylenia","kalendarz-pylenia"],["Rośliny pylące","pylek/rosliny"]] as [string,string][],
                 prefix: "/",
               },
               {

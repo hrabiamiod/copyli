@@ -6,7 +6,7 @@ const DRAWER_LINKS = [
   { to: "/", label: "Mapa" },
   { to: "/pylek/rosliny", label: "Rośliny" },
   { to: "/kalendarz-pylenia", label: "Kalendarz" },
-  { to: "/porady/alergia-na-pylek", label: "Porady" },
+  { to: "/porady", label: "Porady" },
   { to: "/porady/reaktywnosc-krzyzowa", label: "Reaktywność krzyżowa" },
   { to: "/porady/sezon-pylkowy-2026", label: "Sezon pyłkowy 2026" },
 ] as const;
