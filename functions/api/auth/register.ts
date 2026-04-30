@@ -8,18 +8,31 @@ import type { Env } from '../../lib/types.ts';
 
 const REFRESH_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 dni
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost: PagesFunction<Env> = async ({ request, env, waitUntil }) => {
   const origin = request.headers.get('Origin');
   const cors = corsHeaders(origin);
   try {
-  return await _handleRegister(request, env, cors);
+    return await _handleRegister(request, env, cors, waitUntil);
   } catch (err) {
     console.error('[register] uncaught error:', err);
     return json({ error: 'Wewnętrzny błąd serwera. Spróbuj ponownie.' }, 500, cors);
   }
 };
 
-async function _handleRegister(request: Request, env: Env, cors: Record<string, string>): Promise<Response> {
+async function notifyNewUser(email: string, name: string | null, ip: string): Promise<void> {
+  await fetch('https://ntfy.sh/copyli-update-feed-1910', {
+    method: 'POST',
+    headers: {
+      'Title': 'Nowy użytkownik CoPyli.pl',
+      'Tags': 'bust_in_silhouette',
+      'Priority': 'default',
+      'Content-Type': 'text/plain',
+    },
+    body: `Rejestracja: ${name ?? '(brak nazwy)'} <${email}> z IP ${ip}`,
+  });
+}
+
+async function _handleRegister(request: Request, env: Env, cors: Record<string, string>, waitUntil: (p: Promise<unknown>) => void): Promise<Response> {
 
   const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
 
@@ -124,6 +137,8 @@ async function _handleRegister(request: Request, env: Env, cors: Record<string, 
       // Nie przerywamy — konto zostało utworzone
     }
   }
+
+  waitUntil(notifyNewUser(normalizedEmail, sanitizedName, ip).catch(() => {}));
 
   const isMobile = request.headers.get('X-Copyli-Client') === 'mobile';
   const responseHeaders: Record<string, string> = { ...cors };
