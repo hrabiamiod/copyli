@@ -456,3 +456,34 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Mobile corrections (< 768px) ──────────────────────────── */
+@media (max-width: 767px) {
+  /* Homepage hero panel — mniejszy, żeby mapa była widoczna */
+  .home-hero-panel {
+    padding: 14px 16px 12px !important;
+    border-radius: 18px !important;
+  }
+  .home-hero-h1 {
+    font-size: 22px !important;
+    margin: 0 0 10px !important;
+  }
+  .home-hero-hint { display: none !important; }
+
+  /* Strip „W sezonie" na mapie — ukryty na mobile (sekcja poniżej mapy go duplikuje) */
+  .home-season-strip { display: none !important; }
+
+  /* Kalendarz pylenia — węższa kolumna roślin + mniejsze minWidth miesięcy */
+  .cal-plant-col {
+    width: 90px !important;
+    padding-left: 10px !important;
+    padding-right: 6px !important;
+  }
+  .cal-month-col { min-width: 26px !important; }
+
+  /* AdviceIndexPage — featured card bez nakładającego się watermarku */
+  .featured-watermark  { display: none !important; }
+  .featured-card-h2    { max-width: 100% !important; }
+  .featured-card-desc  { max-width: 100% !important; }
+  .featured-card-inner { padding: 20px !important; }
+}

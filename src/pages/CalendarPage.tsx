@@ -61,11 +61,11 @@ export default function CalendarPage() {
         }}>
           {/* Nagłówek miesięcy */}
           <div style={{ display: "flex", borderBottom: "1px solid var(--cream-dark)" }}>
-            <div style={{ width: 140, flexShrink: 0, padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <div className="cal-plant-col" style={{ width: 140, flexShrink: 0, padding: "12px 16px", fontSize: 11, fontWeight: 600, color: "var(--ink-3)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Roślina
             </div>
             {MONTHS.map((m, i) => (
-              <div key={m} style={{
+              <div key={m} className="cal-month-col" style={{
                 flex: 1, padding: "10px 4px", textAlign: "center", fontSize: 11, fontWeight: 600, minWidth: 36,
                 color: i === currentMonth ? "var(--forest)" : "var(--ink-3)",
                 background: i === currentMonth ? "var(--gold-soft)" : "transparent",
@@ -96,7 +96,7 @@ export default function CalendarPage() {
                       onMouseEnter={e => (e.currentTarget.style.background = "var(--surface-tint)")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
-                      <div style={{ width: 140, flexShrink: 0, padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                      <div className="cal-plant-col" style={{ width: 140, flexShrink: 0, padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
                         <span style={{ fontSize: 18, lineHeight: 1 }}>{plant.icon}</span>
                         <div>
                           <Link to={`/pylek/roslina/${plant.slug}`} style={{ fontSize: 12, fontWeight: 600, color: "var(--ink)", lineHeight: 1.3, margin: 0, textDecoration: "none", display: "block" }}
@@ -115,7 +115,7 @@ export default function CalendarPage() {
                         const isPeak = peakMonths.includes(month);
                         const isCurrent = monthIdx === currentMonth;
                         return (
-                          <div key={monthIdx} style={{
+                          <div key={monthIdx} className="cal-month-col" style={{
                             flex: 1, minWidth: 36, padding: "6px 2px", display: "flex", alignItems: "center", justifyContent: "center",
                             background: isCurrent ? "var(--gold-soft)" : "transparent",
                           }}>

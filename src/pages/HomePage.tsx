@@ -161,7 +161,7 @@ export default function HomePage() {
 
         {/* ── Glass hero panel — top-right ── */}
         <div
-          className="anim-slide-r"
+          className="anim-slide-r home-hero-panel"
           style={{
             position: "absolute",
             top: 14,
@@ -196,6 +196,7 @@ export default function HomePage() {
 
           {/* Headline */}
           <h1
+            className="home-hero-h1"
             style={{
               fontFamily: "var(--font-display)",
               fontWeight: 800,
@@ -214,7 +215,7 @@ export default function HomePage() {
           <CitySearch />
 
           {/* Hint */}
-          <p style={{ marginTop: 10, fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5 }}>
+          <p className="home-hero-hint" style={{ marginTop: 10, fontSize: 11, color: "var(--ink-3)", lineHeight: 1.5 }}>
             Wpisz miasto · kliknij na mapę · lub użyj 📍
           </p>
         </div>
@@ -222,7 +223,7 @@ export default function HomePage() {
         {/* ── Season strip — bottom glass bar ── */}
         {inSeason.length > 0 && (
           <div
-            className="anim-fade-up delay-3"
+            className="anim-fade-up delay-3 home-season-strip"
             style={{
               position: "absolute",
               bottom: 14,

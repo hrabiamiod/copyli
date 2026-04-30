@@ -184,7 +184,7 @@ export default function AdviceIndexPage() {
           style={{ display: "block", textDecoration: "none" }}
         >
           <div
-            className="anim-fade-up"
+            className="anim-fade-up featured-card-inner"
             style={{
               margin: "32px 0 0",
               padding: "28px 32px",
@@ -196,7 +196,7 @@ export default function AdviceIndexPage() {
             }}
           >
             {/* Decorative large number */}
-            <div aria-hidden style={{
+            <div aria-hidden className="featured-watermark" style={{
               position: "absolute", right: 24, top: "50%", transform: "translateY(-50%)",
               fontFamily: "var(--font-display)", fontSize: 120, fontWeight: 800,
               color: "rgba(27,67,50,0.05)", lineHeight: 1, pointerEvents: "none",
@@ -213,7 +213,7 @@ export default function AdviceIndexPage() {
 
             <p style={{ fontSize: 22, marginBottom: 10 }}>{featured.icon}</p>
 
-            <h2 style={{
+            <h2 className="featured-card-h2" style={{
               fontFamily: "var(--font-display)",
               fontSize: "clamp(20px, 3vw, 26px)",
               fontWeight: 800,
@@ -226,7 +226,7 @@ export default function AdviceIndexPage() {
               {featured.title}
             </h2>
 
-            <p style={{
+            <p className="featured-card-desc" style={{
               fontSize: 14, color: "var(--ink-2)", lineHeight: 1.7,
               margin: "0 0 20px", maxWidth: "72%",
             }}>

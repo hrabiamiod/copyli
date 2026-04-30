@@ -50,7 +50,7 @@ export default function PlantsIndexPage() {
               <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ink-2)", marginBottom: 12 }}>
                 {CATEGORY_LABELS[cat]}
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
                 {items.map(plant => (
                   <Link
                     key={plant.slug}
