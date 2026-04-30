@@ -629,44 +629,102 @@ function generateAdvicePages(): void {
   }
 }
 
-function generateAdviceHubPage(pages: { slug: string; h1: string; intro: string }[]): void {
+function generateAdviceHubPage(): void {
   const outDir = path.join(DIST, "porady");
   ensureDir(outDir);
 
-  const ICONS: Record<string, string> = {
-    "alergia-na-pylek":              "🌸",
-    "sezon-pylkowy-2026":            "📅",
-    "reaktywnosc-krzyzowa":          "🔗",
-    "alergia-na-trawy":              "🌾",
-    "pylenie-brzozy":                "🌳",
-    "jak-chronic-sie-przed-pylkami": "🛡️",
-    "leki-na-alergie-pylkowa":       "💊",
-    "alergia-na-ambrozje":           "🌿",
-  };
+  // Mirrored from AdviceIndexPage.tsx ARTICLES array
+  const ARTICLES = [
+    { slug: "alergia-na-pylek",              icon: "🌸", title: "Alergia na pyłki — objawy, leczenie i jak się chronić",       desc: "Kompleksowy przewodnik po pyłkowicy. Dowiedz się co uczula, jak zdiagnozować alergię i jak przeżyć sezon z mniejszymi objawami.", tag: "Przewodnik", tagColor: "#1B4332", season: "Cały rok",             readMin: 7 },
+    { slug: "alergia-na-trawy",              icon: "🌾", title: "Alergia na trawy — objawy, sezon i leczenie",                  desc: "Trawy pylą od maja do sierpnia i uczulają 8% Polaków. Jak rozpoznać alergię na tymotykę, kupkówkę i wiechlinnę i jak sobie z nią poradzić?", tag: "Trawy",      tagColor: "#2D6A4F", season: "Maj–Sierpień",         readMin: 6 },
+    { slug: "pylenie-brzozy",                icon: "🌳", title: "Pylenie brzozy — sezon, objawy alergii i ochrona",            desc: "Brzoza uczula ok. 20% polskich alergików. Kiedy pyli, dlaczego jej alergen jest tak agresywny i co łączy brzozę z jabłkami?",           tag: "Drzewa",     tagColor: "#4A7C59", season: "Marzec–Maj",           readMin: 5 },
+    { slug: "leki-na-alergie-pylkowa",       icon: "💊", title: "Leki na alergię pyłkową — rodzaje, działanie i skuteczność",  desc: "Antyhistaminiki, kortykosteroidy donosowe, immunoterapia — czym się różnią, kiedy zacząć i dlaczego samo leczenie objawowe to za mało.", tag: "Leczenie",   tagColor: "#1B4332", season: "Cały rok",             readMin: 8 },
+    { slug: "jak-chronic-sie-przed-pylkami", icon: "🛡️", title: "Jak chronić się przed pyłkami — 10 sprawdzonych metod",      desc: "Które godziny są najgorsze? Jak urządzić dom i co zrobić po powrocie z zewnątrz? Praktyczna lista dla każdego alergika.",             tag: "Ochrona",    tagColor: "#2D6A4F", season: "Cały sezon",           readMin: 5 },
+    { slug: "alergia-na-ambrozje",           icon: "🌿", title: "Ambrozja — alergia, sezon pylenia sierpień–październik",       desc: "Inwazyjny chwast z Ameryki, który wydłuża sezon alergiczny do jesieni. Ekspansja na południu Polski, objawy i jak się chronić.",        tag: "Chwasty",    tagColor: "#856A2E", season: "Sierpień–Październik", readMin: 5 },
+    { slug: "reaktywnosc-krzyzowa",          icon: "🔗", title: "Reaktywność krzyżowa pyłków — pełna lista par",               desc: "Dlaczego uczulenie na brzozę wywołuje reakcję na jabłka, a alergia na trawy — na pomidory? Kompletna mapa zależności pyłek–pokarm.",  tag: "Diagnostyka",tagColor: "#1B4332", season: "Cały rok",             readMin: 6 },
+    { slug: "sezon-pylkowy-2026",            icon: "📅", title: "Sezon pyłkowy 2026 — kiedy i co pyli w Polsce",               desc: "Miesiąc po miesiącu: które drzewa, trawy i chwasty pylą kiedy i gdzie. Prognoza i harmonogram na cały rok dla polskich alergików.",    tag: "Sezon",      tagColor: "#4A7C59", season: "2026",                 readMin: 4 },
+  ];
 
-  const cards = pages.map(p =>
-    `<a href="/porady/${p.slug}" style="display:block;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 24px;text-decoration:none;">
-      <div style="font-size:28px;margin-bottom:10px">${ICONS[p.slug] ?? "📄"}</div>
-      <p style="font-weight:700;font-size:15px;color:#111827;margin:0 0 6px">${esc(p.h1.split(" —")[0])}</p>
-      <p style="font-size:13px;color:#4b5563;line-height:1.6;margin:0 0 12px">${esc(p.intro.substring(0, 120))}...</p>
-      <span style="font-size:13px;color:#15803d;font-weight:600">Czytaj dalej →</span>
-    </a>`
-  ).join("\n");
+  const tagPill = (label: string, color: string) =>
+    `<span style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${color};background:${color}22;border:1px solid ${color}33;border-radius:6px;padding:2px 8px">${esc(label)}</span>`;
+
+  const readTimeHtml = (min: number) =>
+    `<span style="font-size:11px;color:#8A8A75">${min} min czytania</span>`;
+
+  const [featured, ...rest] = ARTICLES;
+
+  const featuredHtml = `
+<a href="/porady/${featured.slug}" style="display:block;text-decoration:none;margin:32px 0 0">
+  <div style="padding:28px 32px;background:#FDFAF7;border:1px solid #E0D8CE;border-radius:16px;position:relative;overflow:hidden">
+    <div aria-hidden="true" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);font-size:120px;font-weight:800;color:rgba(27,67,50,0.05);line-height:1;pointer-events:none;user-select:none">01</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      ${tagPill(featured.tag, featured.tagColor)}
+      <span style="font-size:11px;color:#8A8A75">·</span>
+      ${readTimeHtml(featured.readMin)}
+      <span style="font-size:11px;color:#8A8A75">·</span>
+      <span style="font-size:11px;color:#8A8A75">${esc(featured.season)}</span>
+    </div>
+    <p style="font-size:22px;margin:0 0 10px">${featured.icon}</p>
+    <h2 style="font-family:system-ui,sans-serif;font-size:clamp(20px,3vw,26px);font-weight:800;letter-spacing:-0.03em;color:#18180F;margin:0 0 10px;line-height:1.25;max-width:80%">${esc(featured.title)}</h2>
+    <p style="font-size:14px;color:#4A4A3E;line-height:1.7;margin:0 0 20px;max-width:72%">${esc(featured.desc)}</p>
+    <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#1B4332">Czytaj artykuł →</span>
+  </div>
+</a>`;
+
+  const dividerHtml = `
+<div style="display:flex;align-items:center;gap:12px;margin:36px 0 28px">
+  <div style="flex:1;height:1px;background:#E0D8CE"></div>
+  <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#8A8A75">Wszystkie artykuły</span>
+  <div style="flex:1;height:1px;background:#E0D8CE"></div>
+</div>`;
+
+  const articleRows = rest.map((a, idx) => {
+    const num = String(idx + 2).padStart(2, "0");
+    return `
+<a href="/porady/${a.slug}" style="display:block;text-decoration:none">
+  <div style="display:grid;grid-template-columns:40px 1fr;gap:0 20px;padding:22px 0;border-bottom:1px solid #E0D8CE">
+    <div style="font-size:13px;font-weight:700;color:#8A8A75;padding-top:3px;letter-spacing:-0.02em">${num}</div>
+    <div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px">
+        ${tagPill(a.tag, a.tagColor)}
+        ${readTimeHtml(a.readMin)}
+        <span style="font-size:11px;color:#8A8A75">· ${esc(a.season)}</span>
+      </div>
+      <h3 style="font-family:system-ui,sans-serif;font-size:clamp(16px,2.5vw,19px);font-weight:700;letter-spacing:-0.025em;color:#18180F;margin:0 0 6px;line-height:1.3">${a.icon} ${esc(a.title)}</h3>
+      <p style="font-size:13px;color:#4A4A3E;line-height:1.65;margin:0 0 10px">${esc(a.desc)}</p>
+      <span style="font-size:12px;font-weight:700;color:#1B4332;letter-spacing:0.02em">Czytaj →</span>
+    </div>
+  </div>
+</a>`;
+  }).join("\n");
+
+  const footerLinks = `
+<div style="margin-top:56px;padding-top:28px;border-top:1px solid #E0D8CE;display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+  <span style="font-size:12px;color:#8A8A75;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Sprawdź też</span>
+  <a href="/kalendarz-pylenia" style="font-size:13px;color:#1B4332;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(27,67,50,0.2);padding-bottom:1px">Kalendarz pylenia</a>
+  <a href="/pylek/rosliny" style="font-size:13px;color:#1B4332;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(27,67,50,0.2);padding-bottom:1px">Encyklopedia roślin</a>
+  <a href="/" style="font-size:13px;color:#1B4332;font-weight:600;text-decoration:none;border-bottom:1px solid rgba(27,67,50,0.2);padding-bottom:1px">Mapa pyłkowa</a>
+</div>`;
 
   const bodyHtml = `
-<main style="font-family:system-ui,sans-serif;max-width:860px;margin:0 auto;padding:24px 16px">
-  <nav style="font-size:0.875rem;color:#6b7280;margin-bottom:16px">
-    <a href="/" style="color:#15803d">Strona główna</a> &rsaquo; Porady dla alergików
-  </nav>
-  <h1 style="font-size:1.875rem;font-weight:800;color:#111827;margin-bottom:8px">Porady dla alergików</h1>
-  <p style="color:#4b5563;margin-bottom:32px;line-height:1.7">
-    Praktyczne przewodniki opracowane przez zespół CoPyli.pl — kiedy pylą rośliny,
-    jak się chronić i co stosować podczas sezonu pyłkowego.
-  </p>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
-    ${cards}
+<div style="background:linear-gradient(160deg,#F7F2EB 0%,#eef4f0 100%);border-bottom:1px solid #E0D8CE;padding:40px 20px 36px">
+  <div style="max-width:720px;margin:0 auto">
+    <nav style="font-size:0.875rem;color:#8A8A75;margin-bottom:20px">
+      <a href="/" style="color:#1B4332">Strona główna</a> <span style="margin:0 4px">›</span> <strong style="color:#18180F">Porady</strong>
+    </nav>
+    <p style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#1B4332;margin:0 0 10px">${ARTICLES.length} artykułów · Aktualizowane na bieżąco</p>
+    <h1 style="font-family:system-ui,sans-serif;font-size:clamp(32px,5vw,52px);font-weight:800;letter-spacing:-0.04em;color:#18180F;line-height:1.1;margin:0 0 14px">Porady<br/><span style="color:#1B4332">dla alergików</span></h1>
+    <p style="font-size:15px;color:#4A4A3E;line-height:1.7;max-width:520px;margin:0">Przewodniki opracowane przez zespół CoPyli.pl — kiedy pylą rośliny, jak się leczyć i jak przeżyć sezon w dobrej formie.</p>
   </div>
-</main>`;
+</div>
+<div style="max-width:720px;margin:0 auto;padding:0 20px 80px">
+  ${featuredHtml}
+  ${dividerHtml}
+  <div>
+    ${articleRows}
+  </div>
+  ${footerLinks}
+</div>`;
 
   const canonical = "https://copyli.pl/porady/";
   const structuredData = {
@@ -855,7 +913,7 @@ async function main() {
 
   console.log(`📝 Pre-renderowanie stron poradnikowych...`);
   generateAdvicePages();
-  generateAdviceHubPage(ADVICE_PAGES);
+  generateAdviceHubPage();
   console.log(`  ✅ Wygenerowano ${ADVICE_PAGES.length} stron poradnikowych + hub /porady/`);
 
   console.log(`🏙️  Pre-renderowanie stron porównania miast...`);
