@@ -8,13 +8,6 @@ function H2({ children }: { children: React.ReactNode }) {
     </h2>
   );
 }
-function H3({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: "var(--ink)", margin: "24px 0 8px" }}>
-      {children}
-    </h3>
-  );
-}
 function P({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 12 }}>{children}</p>;
 }
@@ -22,8 +15,8 @@ function P({ children }: { children: React.ReactNode }) {
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Alergia na pyłki — objawy, leczenie i jak się chronić",
-  description: "Kompleksowy przewodnik po alergii pyłkowej: objawy, diagnostyka, leczenie i codzienne sposoby na przeżycie sezonu pyłkowego bez cierpienia.",
+  headline: "Alergia na pyłki — objawy, diagnostyka i jak się chronić",
+  description: "Kompleksowy przewodnik po alergii pyłkowej: objawy, diagnostyka i codzienne sposoby na ograniczenie ekspozycji na pyłki podczas sezonu.",
   url: "https://copyli.pl/porady/alergia-na-pylek",
   datePublished: "2026-04-01",
   dateModified: "2026-04-22",
@@ -42,8 +35,8 @@ export default function AllergyGuidePage() {
   return (
     <>
       <SEOHead
-        title="Alergia na pyłki — objawy, leczenie i jak się chronić | CoPyli.pl"
-        description="Kompleksowy przewodnik po alergii pyłkowej: objawy, diagnostyka, leczenie i codzienne sposoby na przeżycie sezonu pyłkowego bez cierpienia."
+        title="Alergia na pyłki — objawy, diagnostyka i jak się chronić | CoPyli.pl"
+        description="Kompleksowy przewodnik po alergii pyłkowej: objawy, diagnostyka i codzienne sposoby na ograniczenie ekspozycji na pyłki podczas sezonu."
         canonical="https://copyli.pl/porady/alergia-na-pylek"
         structuredData={structuredData}
       />
@@ -67,7 +60,7 @@ export default function AllergyGuidePage() {
             fontFamily: "var(--font-display)", fontSize: "clamp(26px, 4vw, 36px)",
             fontWeight: 800, letterSpacing: "-0.03em", color: "var(--ink)", margin: "8px 0 6px",
           }}>
-            Alergia na pyłki — objawy, leczenie i jak się chronić
+            Alergia na pyłki — objawy, diagnostyka i jak się chronić
           </h1>
           <p style={{ fontSize: 13, color: "var(--ink-3)", marginBottom: 28 }}>
             Ostatnia aktualizacja: 22 kwietnia 2026 · Zespół CoPyli.pl
@@ -137,35 +130,13 @@ export default function AllergyGuidePage() {
           </li>
           <li style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 6 }}>
             <strong>Badania krwi (sIgE)</strong> — oznaczenie swoistych przeciwciał IgE dla konkretnych pyłków.
-            Możliwe przy lekach antyhistaminowych, niezbędne u dzieci.
+            Szczególnie przydatne u małych dzieci.
           </li>
           <li style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 6 }}>
             <strong>Molekularna diagnostyka (ISAC)</strong> — panel 112 alergenów z jednej próbki krwi.
             Wykrywa reaktywność krzyżową (np. brzoza i jabłko).
           </li>
         </ul>
-
-        <H2>Leczenie alergii pyłkowej</H2>
-        <H3>1. Leki doraźne</H3>
-        <P>
-          <strong>Leki antyhistaminowe</strong> II generacji (loratadyna, cetyryzyna, feksofenadyna) łagodzą
-          objawy w ciągu 1–2 godzin. Dostępne bez recepty, można przyjmować profilaktycznie przed wyjściem
-          na dwór w dni wysokiego stężenia pyłków.
-        </P>
-        <P>
-          <strong>Kortykosteroidy donosowe</strong> (flutikazon, mometazon) — najskuteczniejsza forma leczenia
-          objawowego kataru alergicznego. Wymagają regularnego stosowania (pełny efekt po 1–2 tygodniach).
-        </P>
-        <H3>2. Immunoterapia alergenowa (odczulanie)</H3>
-        <P>
-          Odczulanie to jedyna przyczynowa metoda leczenia alergii pyłkowej. Polega na regularnym podawaniu
-          rosnących dawek alergenu przez 3–5 lat, co uczy układ odpornościowy tolerancji.
-          Dostępne formy: zastrzyki podskórne (SCIT) i krople/tabletki podjęzykowe (SLIT).
-        </P>
-        <P>
-          Odczulanie może trwale zmniejszyć objawy, zapobiec rozwojowi astmy i ograniczyć uczulenie na kolejne
-          alergeny. Kwalifikuje alergolog.
-        </P>
 
         <H2>Jak ograniczyć ekspozycję na pyłki?</H2>
         <ul style={{ paddingLeft: 20, marginBottom: 16 }}>

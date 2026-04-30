@@ -8,13 +8,6 @@ function H2({ children }: { children: React.ReactNode }) {
     </h2>
   );
 }
-function H3({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: "var(--ink)", margin: "24px 0 8px" }}>
-      {children}
-    </h3>
-  );
-}
 function P({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 12 }}>{children}</p>;
 }
@@ -168,21 +161,6 @@ export default function GrassAllergyPage() {
           obecność wskazuje na uczulenie pierwotne, nie krzyżowe.
         </P>
 
-        <H2>Leczenie</H2>
-        <H3>Leki doraźne</H3>
-        <P>
-          Antyhistaminiki II generacji (loratadyna, cetyryzyna, feksofenadyna) stosowane regularnie
-          w sezonie ograniczają objawy z nosa i oczu. Kortykosteroidy donosowe wymagają kilkutygodniowego
-          stosowania przed sezonem — zacznij je stosować na 2 tygodnie przed spodziewanym początkiem
-          pylenia traw. Kwalifikuje lekarz lub alergolog.
-        </P>
-        <H3>Immunoterapia (odczulanie)</H3>
-        <P>
-          Odczulanie na alergeny traw to jedyna metoda przyczynowa — może trwale zmniejszyć
-          wrażliwość układu odpornościowego. Dostępne formy: podskórna (SCIT) i podjęzykowa (SLIT,
-          tabletki lub krople). Terapia trwa 3–5 lat i musi być prowadzona przez alergologa.
-        </P>
-
         <H2>Jak sprawdzić stężenie traw na bieżąco</H2>
         <P>
           CoPyli.pl dostarcza dane o stężeniu pyłków traw dla ponad 1000 polskich miast,
@@ -215,6 +193,9 @@ export default function GrassAllergyPage() {
           </Link>
           <Link to="/porady/jak-chronic-sie-przed-pylkami" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
             Jak chronić się przed pyłkami →
+          </Link>
+          <Link to="/porady/reaktywnosc-krzyzowa" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
+            Reaktywność krzyżowa →
           </Link>
           <Link to="/kalendarz-pylenia" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
             Kalendarz pylenia →

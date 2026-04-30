@@ -71,16 +71,11 @@ const TIPS = [
   },
   {
     num: "08",
-    title: "Stosuj leki profilaktycznie",
-    desc: "Kortykosteroidy donosowe wymagają 1–2 tygodni, by osiągnąć pełny efekt. Zacznij je stosować przed spodziewanym początkiem sezonu, nie po pierwszych objawach. Kwalifikuje lekarz.",
-  },
-  {
-    num: "09",
     title: "Używaj oczyszczacza powietrza",
     desc: "Oczyszczacze z filtrem HEPA skutecznie zatrzymują ziarna pyłku. Najważniejszy jest pokój sypialniany — przez sen spędzasz tam 7–8 godzin.",
   },
   {
-    num: "10",
+    num: "09",
     title: "Planuj urlop poza sezonem",
     desc: "Plaże nadmorskie i tereny górskie powyżej 1500 m n.p.m. mają zwykle znacznie niższe stężenia pyłków. Wyjazd nad morze w szczycie pylenia traw (czerwiec–lipiec) może przynieść dużą ulgę.",
   },
@@ -209,9 +204,6 @@ export default function PreventionPage() {
           display: "flex", flexWrap: "wrap", gap: 12 }}>
           <Link to="/porady/alergia-na-pylek" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
             Alergia na pyłki →
-          </Link>
-          <Link to="/porady/leki-na-alergie-pylkowa" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
-            Leki na alergię →
           </Link>
           <Link to="/kalendarz-pylenia" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
             Kalendarz pylenia →

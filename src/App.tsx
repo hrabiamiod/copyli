@@ -30,7 +30,6 @@ import CrossReactivityPage from "./pages/advice/CrossReactivityPage";
 import GrassAllergyPage from "./pages/advice/GrassAllergyPage";
 import BirchPollenPage from "./pages/advice/BirchPollenPage";
 import PreventionPage from "./pages/advice/PreventionPage";
-import MedicationsPage from "./pages/advice/MedicationsPage";
 import AmbrosiaPage from "./pages/advice/AmbrosiaPage";
 import AdviceIndexPage from "./pages/AdviceIndexPage";
 
@@ -72,7 +71,6 @@ export default function App() {
             <Route path="/porady/alergia-na-trawy" element={<GrassAllergyPage />} />
             <Route path="/porady/pylenie-brzozy" element={<BirchPollenPage />} />
             <Route path="/porady/jak-chronic-sie-przed-pylkami" element={<PreventionPage />} />
-            <Route path="/porady/leki-na-alergie-pylkowa" element={<MedicationsPage />} />
             <Route path="/porady/alergia-na-ambrozje" element={<AmbrosiaPage />} />
             <Route path="/regulamin" element={<TermsPage />} />
             <Route path="/polityka-prywatnosci" element={<PrivacyPage />} />

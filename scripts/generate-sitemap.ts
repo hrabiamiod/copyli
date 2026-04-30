@@ -36,7 +36,6 @@ async function main() {
     url("/porady/alergia-na-trawy", "0.7", "yearly"),
     url("/porady/pylenie-brzozy", "0.7", "yearly"),
     url("/porady/jak-chronic-sie-przed-pylkami", "0.7", "yearly"),
-    url("/porady/leki-na-alergie-pylkowa", "0.7", "yearly"),
     url("/porady/alergia-na-ambrozje", "0.7", "yearly"),
   ].join("\n");
 

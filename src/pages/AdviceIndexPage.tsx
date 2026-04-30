@@ -16,8 +16,8 @@ const ARTICLES: Article[] = [
   {
     slug: "alergia-na-pylek",
     icon: "🌸",
-    title: "Alergia na pyłki — objawy, leczenie i jak się chronić",
-    desc: "Kompleksowy przewodnik po pyłkowicy. Dowiedz się co uczula, jak zdiagnozować alergię i jak przeżyć sezon z mniejszymi objawami.",
+    title: "Alergia na pyłki — objawy, diagnostyka i jak się chronić",
+    desc: "Kompleksowy przewodnik po pyłkowicy. Dowiedz się co uczula, jak zdiagnozować alergię i jak ograniczyć ekspozycję na pyłki podczas sezonu.",
     tag: "Przewodnik",
     tagColor: "#1B4332",
     season: "Cały rok",
@@ -42,16 +42,6 @@ const ARTICLES: Article[] = [
     tagColor: "#4A7C59",
     season: "Marzec–Maj",
     readMin: 5,
-  },
-  {
-    slug: "leki-na-alergie-pylkowa",
-    icon: "💊",
-    title: "Leki na alergię pyłkową — rodzaje, działanie i skuteczność",
-    desc: "Antyhistaminiki, kortykosteroidy donosowe, immunoterapia — czym się różnią, kiedy zacząć i dlaczego samo leczenie objawowe to za mało.",
-    tag: "Leczenie",
-    tagColor: "#1B4332",
-    season: "Cały rok",
-    readMin: 8,
   },
   {
     slug: "jak-chronic-sie-przed-pylkami",

@@ -566,14 +566,6 @@ const ADVICE_PAGES = [
     datePublished: "2026-04-29",
   },
   {
-    slug: "leki-na-alergie-pylkowa",
-    title: "Leki na alergię pyłkową — antyhistaminowe, steroidy, odczulanie | CoPyli.pl",
-    description: "Jakie leki na alergię pyłkową wybrać? Antyhistaminowe II generacji, kortykosteroidy donosowe i immunoterapia — jak działają i kiedy je stosować.",
-    h1: "Leki na alergię pyłkową — rodzaje, działanie i skuteczność",
-    intro: "Leczenie alergii pyłkowej opiera się na trzech filarach: leki antyhistaminowe (objawy doraźne), kortykosteroidy donosowe (codzienna kontrola) i immunoterapia alergenowa (jedyna metoda przyczynowa).",
-    datePublished: "2026-04-29",
-  },
-  {
     slug: "alergia-na-ambrozje",
     title: "Ambrozja — alergia, sezon pylenia (sierpień–październik) | CoPyli.pl",
     description: "Ambrozja to jeden z najgroźniejszych alergenów sierpień–październik. Sprawdź sezon pylenia ambrozji w Polsce, objawy alergii i jak się chronić.",
@@ -638,7 +630,6 @@ function generateAdviceHubPage(): void {
     { slug: "alergia-na-pylek",              icon: "🌸", title: "Alergia na pyłki — objawy, leczenie i jak się chronić",       desc: "Kompleksowy przewodnik po pyłkowicy. Dowiedz się co uczula, jak zdiagnozować alergię i jak przeżyć sezon z mniejszymi objawami.", tag: "Przewodnik", tagColor: "#1B4332", season: "Cały rok",             readMin: 7 },
     { slug: "alergia-na-trawy",              icon: "🌾", title: "Alergia na trawy — objawy, sezon i leczenie",                  desc: "Trawy pylą od maja do sierpnia i uczulają 8% Polaków. Jak rozpoznać alergię na tymotykę, kupkówkę i wiechlinnę i jak sobie z nią poradzić?", tag: "Trawy",      tagColor: "#2D6A4F", season: "Maj–Sierpień",         readMin: 6 },
     { slug: "pylenie-brzozy",                icon: "🌳", title: "Pylenie brzozy — sezon, objawy alergii i ochrona",            desc: "Brzoza uczula ok. 20% polskich alergików. Kiedy pyli, dlaczego jej alergen jest tak agresywny i co łączy brzozę z jabłkami?",           tag: "Drzewa",     tagColor: "#4A7C59", season: "Marzec–Maj",           readMin: 5 },
-    { slug: "leki-na-alergie-pylkowa",       icon: "💊", title: "Leki na alergię pyłkową — rodzaje, działanie i skuteczność",  desc: "Antyhistaminiki, kortykosteroidy donosowe, immunoterapia — czym się różnią, kiedy zacząć i dlaczego samo leczenie objawowe to za mało.", tag: "Leczenie",   tagColor: "#1B4332", season: "Cały rok",             readMin: 8 },
     { slug: "jak-chronic-sie-przed-pylkami", icon: "🛡️", title: "Jak chronić się przed pyłkami — 10 sprawdzonych metod",      desc: "Które godziny są najgorsze? Jak urządzić dom i co zrobić po powrocie z zewnątrz? Praktyczna lista dla każdego alergika.",             tag: "Ochrona",    tagColor: "#2D6A4F", season: "Cały sezon",           readMin: 5 },
     { slug: "alergia-na-ambrozje",           icon: "🌿", title: "Ambrozja — alergia, sezon pylenia sierpień–październik",       desc: "Inwazyjny chwast z Ameryki, który wydłuża sezon alergiczny do jesieni. Ekspansja na południu Polski, objawy i jak się chronić.",        tag: "Chwasty",    tagColor: "#856A2E", season: "Sierpień–Październik", readMin: 5 },
     { slug: "reaktywnosc-krzyzowa",          icon: "🔗", title: "Reaktywność krzyżowa pyłków — pełna lista par",               desc: "Dlaczego uczulenie na brzozę wywołuje reakcję na jabłka, a alergia na trawy — na pomidory? Kompletna mapa zależności pyłek–pokarm.",  tag: "Diagnostyka",tagColor: "#1B4332", season: "Cały rok",             readMin: 6 },

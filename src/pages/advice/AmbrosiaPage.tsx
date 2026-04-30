@@ -208,9 +208,6 @@ export default function AmbrosiaPage() {
           <Link to="/porady/jak-chronic-sie-przed-pylkami" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
             Jak chronić się przed pyłkami →
           </Link>
-          <Link to="/porady/leki-na-alergie-pylkowa" style={{ fontSize: 13, color: "var(--forest)", fontWeight: 500 }}>
-            Leki na alergię →
-          </Link>
         </div>
 
         <p style={{ fontSize: 12, color: "var(--ink-3)", marginTop: 24, lineHeight: 1.6 }}>

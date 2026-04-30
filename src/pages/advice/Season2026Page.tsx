@@ -220,10 +220,8 @@ export default function Season2026Page() {
         <ul style={{ paddingLeft: 20, marginBottom: 16 }}>
           {[
             "Zrób testy alergologiczne przed sezonem — najlepiej jesienią lub zimą.",
-            "Skonsultuj z lekarzem plan leczenia na bieżący sezon.",
+            "Skonsultuj z alergologiem, jak przygotować się na bieżący sezon.",
             "Zainstaluj zakładkę CoPyli.pl — sprawdzaj stężenia przed wyjściem.",
-            "Przygotuj zapas leków antyhistaminowych i kortykosteroidów donosowych.",
-            "Jeśli rozważasz odczulanie — zacznij kwalifikację zimą, kuracja musi ruszyć przed sezonem.",
           ].map((tip, i) => (
             <li key={i} style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 6 }}>
               {tip}

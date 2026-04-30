@@ -8,13 +8,6 @@ function H2({ children }: { children: React.ReactNode }) {
     </h2>
   );
 }
-function H3({ children }: { children: React.ReactNode }) {
-  return (
-    <h3 style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, color: "var(--ink)", margin: "24px 0 8px" }}>
-      {children}
-    </h3>
-  );
-}
 function P({ children }: { children: React.ReactNode }) {
   return <p style={{ fontSize: 14, color: "var(--ink-2)", lineHeight: 1.8, marginBottom: 12 }}>{children}</p>;
 }
@@ -178,14 +171,6 @@ export default function BirchPollenPage() {
             <br /><strong style={{ color: "var(--ink)" }}>Ważne:</strong> Gotowanie dezaktywuje Bet v 1 — owoce po obróbce termicznej są zazwyczaj dobrze tolerowane.
           </p>
         </div>
-
-        <H3>Leczenie</H3>
-        <P>
-          Leki antyhistaminowe i kortykosteroidy donosowe łagodzą objawy, ale nie eliminują uczulenia.
-          Immunoterapia alergenowa na brzozę — podskórna lub podjęzykowa — może trwale zmniejszyć
-          nadwrażliwość, a u wielu pacjentów ogranicza też reaktywność krzyżową z pokarmami.
-          Kwalifikuje alergolog.
-        </P>
 
         <div style={{ background: "var(--surface)", border: "1px solid var(--cream-dark)",
           borderRadius: "var(--r-md)", padding: "20px 24px", marginTop: 40 }}>
