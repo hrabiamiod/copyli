@@ -32,6 +32,7 @@ import BirchPollenPage from "./pages/advice/BirchPollenPage";
 import PreventionPage from "./pages/advice/PreventionPage";
 import AmbrosiaPage from "./pages/advice/AmbrosiaPage";
 import AdviceIndexPage from "./pages/AdviceIndexPage";
+import HowItWorksPage from "./pages/HowItWorksPage";
 
 export default function App() {
   return (
@@ -72,6 +73,7 @@ export default function App() {
             <Route path="/porady/pylenie-brzozy" element={<BirchPollenPage />} />
             <Route path="/porady/jak-chronic-sie-przed-pylkami" element={<PreventionPage />} />
             <Route path="/porady/alergia-na-ambrozje" element={<AmbrosiaPage />} />
+            <Route path="/jak-dziala" element={<HowItWorksPage />} />
             <Route path="/regulamin" element={<TermsPage />} />
             <Route path="/polityka-prywatnosci" element={<PrivacyPage />} />
 

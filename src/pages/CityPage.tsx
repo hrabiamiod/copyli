@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { useSavedCity } from "../hooks/useSavedCity";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import CitySearch from "../components/CitySearch";
 import type { City, CityPageData } from "../types";
@@ -23,6 +24,7 @@ export default function CityPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [history, setHistory] = useState<unknown[]>([]);
+  const { savedCity, saveCity, clearCity } = useSavedCity();
 
   useEffect(() => {
     if (!miasto) return;
@@ -101,11 +103,25 @@ export default function CityPage() {
             }}>
               Pyłki w <span style={{ color:"var(--forest)" }}>{city.name}</span>
             </h1>
-            <ShareButton
-              title={`Pyłki w ${city.name} — CoPyli.pl`}
-              text={getCityShareText(city, data.pollen)}
-              url={`https://copyli.pl/pylek/${city.slug}`}
-            />
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              <button
+                onClick={() => savedCity?.slug === city.slug ? clearCity() : saveCity({ name: city.name, slug: city.slug })}
+                style={{
+                  fontSize:13, fontWeight:500, padding:"5px 12px",
+                  borderRadius:20, border:"1px solid var(--forest)",
+                  background: savedCity?.slug === city.slug ? "var(--forest)" : "transparent",
+                  color: savedCity?.slug === city.slug ? "#fff" : "var(--forest)",
+                  cursor:"pointer", whiteSpace:"nowrap",
+                }}
+              >
+                {savedCity?.slug === city.slug ? "✓ Zapisane" : "+ Zapisz"}
+              </button>
+              <ShareButton
+                title={`Pyłki w ${city.name} — CoPyli.pl`}
+                text={getCityShareText(city, data.pollen)}
+                url={`https://copyli.pl/pylek/${city.slug}`}
+              />
+            </div>
           </div>
           {updatedAt && <p style={{ fontSize:12, color:"var(--ink-3)" }}>Dane z: {updatedAt}</p>}
           {city.seo_description && (

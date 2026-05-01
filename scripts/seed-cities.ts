@@ -20,6 +20,9 @@ interface OverpassElement {
   };
 }
 
+import * as fs from "fs";
+import * as path from "path";
+
 interface City {
   name: string;
   slug: string;
@@ -28,6 +31,46 @@ interface City {
   population: number;
   voivodeshipSlug: string;
 }
+
+interface GeoFeature {
+  properties: { slug: string; name: string };
+  geometry: { type: "Polygon" | "MultiPolygon"; coordinates: any };
+}
+
+function pointInRing(lat: number, lon: number, ring: [number, number][]): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]; // xi=lon, yi=lat w GeoJSON
+    const [xj, yj] = ring[j];
+    if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi))
+      inside = !inside;
+  }
+  return inside;
+}
+
+function pointInFeature(lat: number, lon: number, f: GeoFeature): boolean {
+  const { type, coordinates } = f.geometry;
+  if (type === "Polygon") {
+    return pointInRing(lat, lon, coordinates[0]) &&
+      !coordinates.slice(1).some((h: [number, number][]) => pointInRing(lat, lon, h));
+  }
+  if (type === "MultiPolygon") {
+    return coordinates.some((poly: [number, number][][]) =>
+      pointInRing(lat, lon, poly[0]) &&
+      !poly.slice(1).some((h: [number, number][]) => pointInRing(lat, lon, h))
+    );
+  }
+  return false;
+}
+
+const _geoFeatures: GeoFeature[] = (() => {
+  try {
+    const gjPath = path.join(process.cwd(), "public/data/voivodeships.geojson");
+    return JSON.parse(fs.readFileSync(gjPath, "utf-8")).features;
+  } catch {
+    return [];
+  }
+})();
 
 const VOIVODESHIPS: Array<{ id: number; name: string; slug: string; lat: number; lon: number }> = [
   { id: 1,  name: "Dolnośląskie",       slug: "dolnoslaskie",       lat: 51.1079, lon: 17.0385 },
@@ -59,40 +102,8 @@ function toSlug(name: string): string {
 }
 
 function findVoivodeship(lat: number, lon: number): string {
-  // Przypisanie na podstawie przybliżonych granic geograficznych
-  // Uproszczone — dokładne byłoby wymagało GeoJSON intersection
-  if (lat > 54.0) return "pomorskie";
-  if (lat > 53.5 && lon < 16.5) return "zachodniopomorskie";
-  if (lat > 53.5 && lon < 18.5) return "pomorskie";
-  if (lat > 53.0 && lon < 16.0) return "zachodniopomorskie";
-  if (lat > 53.0 && lon < 18.0) return "kujawsko-pomorskie";
-  if (lat > 53.0 && lon > 22.0) return "podlaskie";
-  if (lat > 53.0 && lon > 20.0) return "warminsko-mazurskie";
-  if (lat > 52.5 && lon > 22.5) return "mazowieckie";
-  if (lat > 52.0 && lon < 14.5) return "lubuskie";
-  if (lat > 52.0 && lon < 16.0) return "lubuskie";
-  if (lat > 52.0 && lon < 18.5) return "wielkopolskie";
-  if (lat > 52.0 && lon < 21.0) return "mazowieckie";
-  if (lat > 52.0 && lon > 21.0) return "mazowieckie";
-  if (lat > 51.5 && lon < 16.5) return "dolnoslaskie";
-  if (lat > 51.5 && lon < 18.0) return "wielkopolskie";
-  if (lat > 51.0 && lon < 16.0) return "dolnoslaskie";
-  if (lat > 51.0 && lon < 17.5) return "dolnoslaskie";
-  if (lat > 51.0 && lon < 18.5) return "lodzkie";
-  if (lat > 51.0 && lon < 21.5) return "lodzkie";
-  if (lat > 51.0 && lon > 21.5) return "lubelskie";
-  if (lat > 50.5 && lon < 16.5) return "dolnoslaskie";
-  if (lat > 50.5 && lon < 18.5) return "opolskie";
-  if (lat > 50.5 && lon < 20.0) return "slaskie";
-  if (lat > 50.5 && lon < 22.5) return "swietokrzyskie";
-  if (lat > 50.5 && lon > 22.5) return "lubelskie";
-  if (lat > 50.0 && lon < 17.5) return "dolnoslaskie";
-  if (lat > 50.0 && lon < 19.5) return "slaskie";
-  if (lat > 50.0 && lon < 21.5) return "malopolskie";
-  if (lat > 50.0 && lon > 21.5) return "podkarpackie";
-  if (lon < 19.5) return "slaskie";
-  if (lon < 21.5) return "malopolskie";
-  return "podkarpackie";
+  const found = _geoFeatures.find(f => pointInFeature(lat, lon, f));
+  return found?.properties.slug ?? "mazowieckie";
 }
 
 async function fetchCitiesFromOverpass(): Promise<OverpassElement[]> {

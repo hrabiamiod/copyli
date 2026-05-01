@@ -173,7 +173,7 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
   const highPollen = pollen.filter(p => p.level === "high" || p.level === "very_high");
 
   const title = buildCityTitle(city.name, city.slug, pollen);
-  const description = buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS);
+  const description = buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS, city.slug);
 
   const canonical = `https://copyli.pl/pylek/${city.slug}`;
   const ogImage = `https://copyli.pl/og/cities/${city.slug}.png`;
@@ -196,7 +196,7 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
     },
     {
       q: `Kiedy jest sezon pyłkowy w ${city.name}?`,
-      a: `Sezon pyłkowy w ${city.name} (${city.voivodeship_name}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik).`,
+      a: `Sezon pyłkowy w ${city.name} (${city.voivodeship_name}${city.population > 0 ? `, ok. ${city.population.toLocaleString("pl-PL")} mieszkańców` : ""}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik). Dane dotyczą lokalizacji ${city.lat.toFixed(4)}°N ${city.lon.toFixed(4)}°E.`,
     },
     {
       q: `Skąd pochodzą dane pyłkowe dla ${city.name}?`,

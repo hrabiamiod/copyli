@@ -7,7 +7,7 @@ export function getCityPageTitle(city: City, pollen: PollenData[]): string {
 }
 
 export function getCityPageDescription(city: City, pollen: PollenData[]): string {
-  return buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS);
+  return buildCityDescription(city.name, city.voivodeship_name, pollen, LEVEL_LABELS, city.slug);
 }
 
 export function getCityShareText(city: City, pollen: PollenData[]): string {

@@ -33,13 +33,15 @@ export function buildCityDescription(
   voivodeshipName: string,
   pollen: PollenEntry[],
   levelLabels: Record<string, string>,
+  citySlug?: string,
 ): string {
+  const locative = (citySlug && CITY_LOCATIVE[citySlug]) ?? cityName;
   const active = pollen.filter(p => p.level !== "none").slice(0, 3);
   if (active.length > 0) {
     const parts = active
       .map(p => `${LEVEL_EMOJI[p.level] ?? ""} ${p.plant_name} ${levelLabels[p.level]?.toLowerCase() ?? p.level}`.trim())
       .join(" · ");
-    return `🌿 Dziś w ${cityName}: ${parts}. Prognoza 5-dniowa i Indeks Spacerowy dla alergików.`;
+    return `🌿 Dziś w ${locative}: ${parts}. Prognoza 5-dniowa i Indeks Spacerowy dla alergików.`;
   }
-  return `🌿 Stężenie pyłków w ${cityName} (${voivodeshipName}) — niskie. Prognoza i Indeks Spacerowy. Dane co 2h.`;
+  return `🌿 Stężenie pyłków w ${locative} (${voivodeshipName}) — niskie. Prognoza i Indeks Spacerowy. Dane co 2h.`;
 }

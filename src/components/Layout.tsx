@@ -4,6 +4,7 @@ import CitySearch from "./CitySearch";
 import UserMenu from "./UserMenu";
 import MobileDrawer from "./MobileDrawer";
 import { useAuth } from "../context/AuthContext";
+import { useSavedCity } from "../hooks/useSavedCity";
 
 const NAV_LINKS = [
   { to: "/", label: "Mapa" },
@@ -23,6 +24,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { savedCity } = useSavedCity();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -103,6 +105,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
+          {/* Saved city chip */}
+          {savedCity && (
+            <Link
+              to={`/pylek/${savedCity.slug}`}
+              className="hidden md:flex items-center"
+              style={{
+                fontSize: 12, fontWeight: 500, padding: "4px 10px",
+                borderRadius: 20, background: "var(--forest-soft)",
+                color: "var(--forest)", textDecoration: "none", whiteSpace: "nowrap",
+              }}
+            >
+              📍 {savedCity.name}
+            </Link>
+          )}
+
           {/* User menu / login button */}
           <UserMenu />
 
@@ -182,7 +199,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               },
               {
                 title: "Informacje",
-                links: [["Regulamin","regulamin"],["Polityka prywatności","polityka-prywatnosci"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
+                links: [["Jak działa","jak-dziala"],["Regulamin","regulamin"],["Polityka prywatności","polityka-prywatnosci"],["Kontakt","mailto:kontakt@copyli.pl"]] as [string,string][],
                 prefix: "/",
               },
             ].map(({ title, links, prefix }) => (
