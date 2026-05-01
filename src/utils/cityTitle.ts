@@ -24,16 +24,22 @@ export function buildCityTitle(cityName: string, citySlug: string, pollen: Polle
   return `Stężenie pyłków w ${cityName} dziś — aktualne dane | CoPyli.pl`;
 }
 
+const LEVEL_EMOJI: Record<string, string> = {
+  none: "", low: "🟢", medium: "🟡", high: "🔴", very_high: "🔴",
+};
+
 export function buildCityDescription(
   cityName: string,
   voivodeshipName: string,
   pollen: PollenEntry[],
   levelLabels: Record<string, string>,
 ): string {
-  const high = pollen.filter(p => p.level === "high" || p.level === "very_high");
-  if (high.length > 0) {
-    const names = high.map(p => `${p.plant_name} (${levelLabels[p.level]?.toLowerCase() ?? p.level})`).join(", ");
-    return `Aktualne stężenie pyłków w ${cityName}. Dziś: ${names}. Prognoza 5-dniowa, Indeks Spacerowy i kalendarz pylenia.`;
+  const active = pollen.filter(p => p.level !== "none").slice(0, 3);
+  if (active.length > 0) {
+    const parts = active
+      .map(p => `${LEVEL_EMOJI[p.level] ?? ""} ${p.plant_name} ${levelLabels[p.level]?.toLowerCase() ?? p.level}`.trim())
+      .join(" · ");
+    return `🌿 Dziś w ${cityName}: ${parts}. Prognoza 5-dniowa i Indeks Spacerowy dla alergików.`;
   }
-  return `Aktualne stężenie pyłków w ${cityName} (${voivodeshipName}). Sprawdź co pyli, prognozę 5-dniową i Indeks Spacerowy. Dane dla alergików aktualizowane co 2 godziny.`;
+  return `🌿 Stężenie pyłków w ${cityName} (${voivodeshipName}) — niskie. Prognoza i Indeks Spacerowy. Dane co 2h.`;
 }

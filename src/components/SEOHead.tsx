@@ -5,10 +5,11 @@ interface SEOHeadProps {
   description: string;
   canonical: string;
   structuredData?: object;
+  extraStructuredData?: object;
   ogImage?: string;
 }
 
-export default function SEOHead({ title, description, canonical, structuredData, ogImage }: SEOHeadProps) {
+export default function SEOHead({ title, description, canonical, structuredData, extraStructuredData, ogImage }: SEOHeadProps) {
   const image = ogImage ?? "https://copyli.pl/og-default.png";
 
   useEffect(() => {
@@ -65,7 +66,19 @@ export default function SEOHead({ title, description, canonical, structuredData,
       }
       sdEl.textContent = JSON.stringify(structuredData);
     }
-  }, [title, description, canonical, structuredData, image]);
+
+    // Extra Structured Data (second JSON-LD block, e.g. WebSite + Organization)
+    if (extraStructuredData) {
+      let sdEl2 = document.getElementById("structured-data-extra") as HTMLScriptElement | null;
+      if (!sdEl2) {
+        sdEl2 = document.createElement("script");
+        sdEl2.id = "structured-data-extra";
+        sdEl2.type = "application/ld+json";
+        document.head.appendChild(sdEl2);
+      }
+      sdEl2.textContent = JSON.stringify(extraStructuredData);
+    }
+  }, [title, description, canonical, structuredData, extraStructuredData, image]);
 
   // Render in head during SSR (when using vite-ssg or similar)
   return null;

@@ -27,34 +27,43 @@ export function getVoivodeshipPageDescription(name: string): string {
   return `Aktualne stężenie pyłków w województwie ${name}. Mapa pylenia, prognoza i dane dla wszystkich miast regionu. Informacje dla alergików aktualizowane co 2 godziny.`;
 }
 
-export function getStructuredDataCity(city: City): object {
+export function getStructuredDataCity(city: City, dateModified?: string): object {
+  const now = dateModified ?? new Date().toISOString();
   return {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": `Pyłki w ${city.name}`,
-    "description": city.seo_description,
-    "url": `https://copyli.pl/pylek/${city.slug}`,
-    "about": {
-      "@type": "Place",
-      "name": city.name,
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": city.lat,
-        "longitude": city.lon,
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `https://copyli.pl/pylek/${city.slug}#webpage`,
+        "name": `Pyłki w ${city.name}`,
+        "description": city.seo_description,
+        "url": `https://copyli.pl/pylek/${city.slug}`,
+        "dateModified": now,
+        "about": {
+          "@type": "Place",
+          "name": city.name,
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": city.lat,
+            "longitude": city.lon,
+          },
+          "containedInPlace": {
+            "@type": "AdministrativeArea",
+            "name": city.voivodeship_name,
+          }
+        },
+        "breadcrumb": { "@id": `https://copyli.pl/pylek/${city.slug}#breadcrumb` },
       },
-      "containedInPlace": {
-        "@type": "AdministrativeArea",
-        "name": city.voivodeship_name,
+      {
+        "@type": "BreadcrumbList",
+        "@id": `https://copyli.pl/pylek/${city.slug}#breadcrumb`,
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://copyli.pl" },
+          { "@type": "ListItem", "position": 2, "name": "Mapa pyłkowa", "item": "https://copyli.pl/pylek" },
+          { "@type": "ListItem", "position": 3, "name": city.name, "item": `https://copyli.pl/pylek/${city.slug}` },
+        ]
       }
-    },
-    "breadcrumb": {
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Strona główna", "item": "https://copyli.pl" },
-        { "@type": "ListItem", "position": 2, "name": "Mapa pyłkowa", "item": "https://copyli.pl/pylek" },
-        { "@type": "ListItem", "position": 3, "name": city.name, "item": `https://copyli.pl/pylek/${city.slug}` },
-      ]
-    }
+    ]
   };
 }
 
@@ -147,6 +156,44 @@ export function getStructuredDataCalendar(year: number): object {
         { "@type": "ListItem", "position": 2, "name": "Kalendarz pylenia", "item": "https://copyli.pl/kalendarz-pylenia" },
       ],
     },
+  };
+}
+
+export function getStructuredDataHomepage(): object {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://copyli.pl/#website",
+        "name": "CoPyli.pl",
+        "url": "https://copyli.pl",
+        "description": "Interaktywna mapa pyłkowa Polski — aktualne stężenia pyłków i prognoza dla alergików.",
+        "inLanguage": "pl",
+        "publisher": { "@id": "https://copyli.pl/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://copyli.pl/pylek/{search_term_string}",
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://copyli.pl/#organization",
+        "name": "CoPyli.pl",
+        "url": "https://copyli.pl",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://copyli.pl/android-chrome-192x192.png",
+          "width": 192,
+          "height": 192,
+        },
+        "sameAs": [],
+      },
+    ],
   };
 }
 

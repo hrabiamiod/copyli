@@ -77,7 +77,7 @@ export default function CityPage() {
         title={getCityPageTitle(city, data.pollen)}
         description={getCityPageDescription(city, data.pollen)}
         canonical={`https://copyli.pl/pylek/${city.slug}`}
-        structuredData={getStructuredDataCity(city)}
+        structuredData={getStructuredDataCity(city, data.pollen[0]?.measured_at)}
         ogImage={`https://copyli.pl/og/cities/${city.slug}.png`}
       />
 

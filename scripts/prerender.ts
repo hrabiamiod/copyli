@@ -259,32 +259,35 @@ async function generateCityPageAsync(city: City, allCities: City[]): Promise<voi
   </p>
 </main>`;
 
+  const updatedAt = new Date().toISOString();
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: `Pyłki w ${city.name}`,
-    description,
-    url: canonical,
-    about: {
-      "@type": "Place",
-      name: city.name,
-      geo: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lon },
-      containedInPlace: { "@type": "AdministrativeArea", name: city.voivodeship_name },
-    },
-    breadcrumb: {
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
-        { "@type": "ListItem", position: 2, name: city.voivodeship_name, item: `https://copyli.pl/pylek/woj/${city.voivodeship_slug}` },
-        { "@type": "ListItem", position: 3, name: city.name, item: canonical },
-      ],
-    },
-    dataset: activePollen.length > 0 ? {
-      "@type": "Dataset",
-      name: `Dane pyłkowe ${city.name}`,
-      description: `Aktualne stężenie pyłków w ${city.name}`,
-      temporalCoverage: new Date().toISOString().split("T")[0],
-    } : undefined,
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${canonical}#webpage`,
+        name: `Pyłki w ${city.name}`,
+        description,
+        url: canonical,
+        dateModified: updatedAt,
+        about: {
+          "@type": "Place",
+          name: city.name,
+          geo: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lon },
+          containedInPlace: { "@type": "AdministrativeArea", name: city.voivodeship_name },
+        },
+        breadcrumb: { "@id": `${canonical}#breadcrumb` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Strona główna", item: "https://copyli.pl" },
+          { "@type": "ListItem", position: 2, name: city.voivodeship_name, item: `https://copyli.pl/pylek/woj/${city.voivodeship_slug}` },
+          { "@type": "ListItem", position: 3, name: city.name, item: canonical },
+        ],
+      },
+    ],
   };
 
   const html = injectMeta(template, { title, description, canonical, ogImage, structuredData, extraStructuredData: faqStructuredData, bodyHtml });

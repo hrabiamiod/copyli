@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import type { City, MapData, MetaData, Plant, PollenData } from "../types";
 import SEOHead from "../components/SEOHead";
 import CitySearch from "../components/CitySearch";
-import { getStructuredDataFAQ } from "../utils/seo";
+import { getStructuredDataFAQ, getStructuredDataHomepage } from "../utils/seo";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../lib/api";
 
@@ -124,6 +124,7 @@ export default function HomePage() {
         description="Aktualne stężenie pyłków w Polsce. Interaktywna mapa pylenia dla alergików — sprawdź co pyli w Twoim mieście, prognoza 5-dniowa i Indeks Spacerowy. Dane aktualizowane co 2 godziny."
         canonical="https://copyli.pl"
         structuredData={getStructuredDataFAQ()}
+        extraStructuredData={getStructuredDataHomepage()}
       />
 
       {/* ══════════════════════════════════════════════════════
