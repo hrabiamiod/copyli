@@ -11,6 +11,7 @@ import WalkIndexCard from "../components/WalkIndexCard";
 import AirQualityCard from "../components/AirQualityCard";
 import HistoryChart from "../components/HistoryChart";
 import { getCityPageTitle, getCityPageDescription, getCityShareText, getStructuredDataCity } from "../utils/seo";
+import { CITY_LOCATIVE } from "../utils/cityLocative";
 import StickyMobileCTA from "../components/StickyMobileCTA";
 
 const PollenMap = lazy(() => import("../components/PollenMap"));
@@ -66,6 +67,8 @@ export default function CityPage() {
   );
 
   const wx = data.weather;
+  const cityLoc = CITY_LOCATIVE[city.slug];
+  const cityPrep = cityLoc ? `w ${cityLoc}` : `w ${city.name}`;
   const nearbyCities = cities
     .filter(c => c.voivodeship_slug === city.voivodeship_slug && c.slug !== city.slug)
     .sort((a, b) => b.population - a.population).slice(0, 6);
@@ -101,7 +104,7 @@ export default function CityPage() {
               fontFamily:"var(--font-display)", fontSize:"clamp(26px,4vw,36px)",
               fontWeight:800, letterSpacing:"-0.03em", color:"var(--ink)", margin:0,
             }}>
-              Pyłki w <span style={{ color:"var(--forest)" }}>{city.name}</span>
+              Pyłki <span style={{ color:"var(--forest)" }}>{cityPrep}</span>
             </h1>
             <div style={{ display:"flex", gap:8, alignItems:"center" }}>
               <button
@@ -117,7 +120,7 @@ export default function CityPage() {
                 {savedCity?.slug === city.slug ? "✓ Zapisane" : "+ Zapisz"}
               </button>
               <ShareButton
-                title={`Pyłki w ${city.name} — CoPyli.pl`}
+                title={`Pyłki ${cityPrep} — CoPyli.pl`}
                 text={getCityShareText(city, data.pollen)}
                 url={`https://copyli.pl/pylek/${city.slug}`}
               />
@@ -142,7 +145,7 @@ export default function CityPage() {
               <h2 style={{
                 fontFamily:"var(--font-display)", fontSize:16, fontWeight:700,
                 color:"var(--ink)", margin:"0 0 16px", letterSpacing:"-0.02em",
-              }}>Co pyli dziś w {city.name}?</h2>
+              }}>Co pyli dziś {cityPrep}?</h2>
               <PollenCard data={data.pollen} />
             </div>
 
@@ -165,7 +168,7 @@ export default function CityPage() {
                   color: "var(--ink)", margin: "0 0 4px", letterSpacing: "-0.02em",
                 }}>Trendy sezonowe — ostatnie 90 dni</h2>
                 <p style={{ fontSize: 12, color: "var(--ink-3)", margin: "0 0 16px" }}>
-                  Maksymalne dzienne stężenie pyłków w {city.name}.
+                  Maksymalne dzienne stężenie pyłków {cityPrep}.
                 </p>
                 <HistoryChart history={history as Parameters<typeof HistoryChart>[0]["history"]} />
               </div>
@@ -177,19 +180,19 @@ export default function CityPage() {
                 fontFamily:"var(--font-display)", fontSize:16, fontWeight:700,
                 color:"var(--ink)", margin:"0 0 16px", letterSpacing:"-0.02em",
               }}>
-                Najczęstsze pytania — pyłki w {city.name}
+                Najczęstsze pytania — pyłki {cityPrep}
               </h2>
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                 {[
                   {
-                    q: `Co pyli dziś w ${city.name}?`,
+                    q: `Co pyli dziś ${cityPrep}?`,
                     a: data.pollen.filter(p => p.level !== "none").length > 0
-                      ? `Dziś w ${city.name} pylą: ${data.pollen.filter(p => p.level !== "none").slice(0,3).map(p => `${p.plant_name} (${p.level === "very_high" ? "bardzo wysokie" : p.level === "high" ? "wysokie" : p.level === "medium" ? "średnie" : "niskie"})`).join(", ")}.`
-                      : `Aktualnie stężenie pyłków w ${city.name} jest niskie lub nie ma aktywnych alergenów.`,
+                      ? `Dziś ${cityPrep} pylą: ${data.pollen.filter(p => p.level !== "none").slice(0,3).map(p => `${p.plant_name} (${p.level === "very_high" ? "bardzo wysokie" : p.level === "high" ? "wysokie" : p.level === "medium" ? "średnie" : "niskie"})`).join(", ")}.`
+                      : `Aktualnie stężenie pyłków ${cityPrep} jest niskie lub nie ma aktywnych alergenów.`,
                   },
                   {
-                    q: `Kiedy jest sezon pyłkowy w ${city.name}?`,
-                    a: `Sezon pyłkowy w ${city.name} (${city.voivodeship_name}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik).`,
+                    q: `Kiedy jest sezon pyłkowy ${cityPrep}?`,
+                    a: `Sezon pyłkowy ${cityPrep} (${city.voivodeship_name}) trwa od lutego do października. Najwcześniej pylą olcha i leszczyna (luty–marzec), następnie brzoza i jesion (kwiecień–maj), trawy (maj–wrzesień) oraz chwasty jak bylica i ambrozja (lipiec–październik).`,
                   },
                   {
                     q: `Skąd pochodzą dane pyłkowe dla ${city.name}?`,

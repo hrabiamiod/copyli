@@ -5,7 +5,7 @@ interface SavedCity {
   slug: string;
 }
 
-const KEY = "copyli_saved_city";
+const KEY = "copyli:selected-city";
 
 export function useSavedCity() {
   const [savedCity, setSavedCity] = useState<SavedCity | null>(null);
@@ -13,9 +13,15 @@ export function useSavedCity() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setSavedCity(JSON.parse(raw));
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.slug && parsed?.name) {
+        setSavedCity(parsed);
+      } else {
+        localStorage.removeItem(KEY);
+      }
     } catch {
-      // ignore corrupt data
+      localStorage.removeItem(KEY);
     }
   }, []);
 

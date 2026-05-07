@@ -90,7 +90,7 @@ export async function callHandler<T = Record<string, unknown>>(
   request: Request,
   env: ReturnType<typeof createTestEnv>['env']
 ): Promise<{ res: Response; body: T }> {
-  const res = await handler({ request, env } as never);
+  const res = await handler({ request, env, waitUntil: (_p: Promise<unknown>) => {} } as never);
   let body: T = {} as T;
   try {
     body = await res.json() as T;

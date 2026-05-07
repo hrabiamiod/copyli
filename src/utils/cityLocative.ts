@@ -32,6 +32,9 @@ export const CITY_LOCATIVE: Record<string, string> = {
   "elblag": "Elblągu",
   "gorzow-wielkopolski": "Gorzowie Wielkopolskim",
   "walbrzych": "Wałbrzychu",
+  "klodzko": "Kłodzku",
+  "wolow": "Wołowie",
+  "sroda-slaska": "Środzie Śląskiej",
   "wloclawek": "Włocławku",
   "tarnow": "Tarnowie",
   "chorzow": "Chorzowie",
@@ -116,6 +119,7 @@ export const CITY_LOCATIVE: Record<string, string> = {
   "opoczno": "Opocznie",
   "radomsko": "Radomsku",
   "wielun": "Wieluniu",
+  "strykow": "Strykowie",
   // Małopolskie
   "wieliczka": "Wieliczce",
   "oswiecim": "Oświęcimiu",
@@ -134,6 +138,7 @@ export const CITY_LOCATIVE: Record<string, string> = {
   "trzebinia": "Trzebini",
   "kety": "Kętach",
   // Mazowieckie
+  "mlawa": "Mławie",
   "ciechanow": "Ciechanowie",
   "ostroleka": "Ostrołęce",
   "zyrardow": "Żyrardowie",
@@ -165,6 +170,7 @@ export const CITY_LOCATIVE: Record<string, string> = {
   "brzozow": "Brzozowie",
   "lesko": "Lesku",
   // Podlaskie
+  "suraz": "Surażu",
   "bielsk-podlaski": "Bielsku Podlaskim",
   "hajnowka": "Hajnówce",
   "zambrow": "Zambrowie",
@@ -185,6 +191,8 @@ export const CITY_LOCATIVE: Record<string, string> = {
   // Śląskie
   "rybnik": "Rybniku",
   "zawiercie": "Zawierciu",
+  "myszkow": "Myszkowie",
+  "klobuck": "Kłobucku",
   "bedzin": "Będzinie",
   "siemianowice-slaskie": "Siemianowicach Śląskich",
   "mikolow": "Mikołowie",
@@ -217,6 +225,7 @@ export const CITY_LOCATIVE: Record<string, string> = {
   "gizycko": "Giżycku",
   "lidzbark-warminski": "Lidzbarku Warmińskim",
   // Wielkopolskie
+  "ostrzeszow": "Ostrzeszowie",
   "kolo": "Kole",
   "turek": "Turku",
   "rawicz": "Rawiczu",

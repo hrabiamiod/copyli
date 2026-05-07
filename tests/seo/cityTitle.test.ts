@@ -59,15 +59,15 @@ describe("buildCityTitle", () => {
 });
 
 describe("buildCityDescription", () => {
-  it("lists high-level pollen in description", () => {
+  it("lists active pollen in description", () => {
     const desc = buildCityDescription("Warszawa", "mazowieckie", [birch, grass], LEVEL_LABELS);
-    expect(desc).toContain("Brzoza (wysokie)");
-    expect(desc).not.toContain("Trawy");
+    expect(desc).toContain("Brzoza");
+    expect(desc).toContain("Prognoza 5-dniowa");
   });
 
-  it("returns generic description when no high-level pollen", () => {
-    const desc = buildCityDescription("Kraków", "małopolskie", [low], LEVEL_LABELS);
-    expect(desc).toContain("małopolskie");
-    expect(desc).toContain("co 2 godziny");
+  it("returns generic description when no active pollen", () => {
+    const desc = buildCityDescription("Kraków", "małopolskie", [none], LEVEL_LABELS);
+    expect(desc).toContain("niskie");
+    expect(desc).toContain("Indeks Spacerowy");
   });
 });
